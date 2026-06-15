@@ -1,0 +1,12 @@
+node_modules
+backend/node_modules
+backend/kiosk.db
+dist
+.git
+.gitignore
+.vscode
+*.md
+*.pdf
+diagrams
+.env
+backend/.env

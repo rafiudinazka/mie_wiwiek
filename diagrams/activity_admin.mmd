@@ -1,0 +1,57 @@
+flowchart TD
+    Start((●)) --> A["Admin Mengakses\nHalaman Admin\n(#/admin)"]
+    A --> B["Sistem Menampilkan\nHalaman Login PIN"]
+    B --> C["Admin Memasukkan\nPIN 4 Digit"]
+    C --> D{"PIN Valid?"}
+    D -->|Tidak| E["Tampilkan\nPesan Error"]
+    E --> C
+    D -->|Ya| F["Sistem Memuat\nAdmin Dashboard"]
+    F --> G["Dashboard Menampilkan\nStatistik Sistem"]
+    G --> H{"Admin Memilih\nMenu?"}
+
+    H -->|Dashboard| G
+
+    H -->|Kelola Produk| I["Menampilkan\nDaftar Produk"]
+    I --> I2{"Aksi?"}
+    I2 -->|Tambah| I3["Isi Form:\nNama, Harga, Kategori,\nDeskripsi, Gambar"]
+    I3 --> I4["Simpan Produk Baru\nke Database"]
+    I4 --> I
+    I2 -->|Edit| I5["Muat Data Produk\nke Form Edit"]
+    I5 --> I6["Simpan Perubahan\nke Database"]
+    I6 --> I
+    I2 -->|Hapus| I7["Konfirmasi Penghapusan"]
+    I7 --> I8["Hapus Produk\ndari Database"]
+    I8 --> I
+    I2 -->|Kembali| H
+
+    H -->|Kelola Kategori| J["Menampilkan\nDaftar Kategori"]
+    J --> J2{"Aksi?"}
+    J2 -->|Tambah| J3["Isi Form:\nNama, ID, Urutan"]
+    J3 --> J4["Simpan Kategori Baru"]
+    J4 --> J
+    J2 -->|Edit| J5["Edit Label dan Urutan"]
+    J5 --> J6["Simpan Perubahan"]
+    J6 --> J
+    J2 -->|Hapus| J7{"Kategori Memiliki\nProduk?"}
+    J7 -->|Ya| J8["Gagal: Tampilkan Error\n'Tidak bisa hapus kategori\nyang memiliki produk'"]
+    J8 --> J
+    J7 -->|Tidak| J9["Hapus Kategori"]
+    J9 --> J
+    J2 -->|Kembali| H
+
+    H -->|Riwayat Order| K["Menampilkan\nDaftar Semua Order"]
+    K --> K2{"Filter Status?"}
+    K2 -->|Semua| K
+    K2 -->|Aktif| K3["Filter: Status\n'confirmed'"]
+    K3 --> K
+    K2 -->|Selesai| K4["Filter: Status\n'completed'"]
+    K4 --> K
+    K2 -->|Lihat Detail| K5["Tampilkan Detail Order:\nItem, Modifier, Total,\nData Pelanggan"]
+    K5 --> K
+    K2 -->|Kembali| H
+
+    H -->|Logout| L["Kembali ke\nHalaman Kiosk"]
+    L --> End((●))
+
+    style Start fill:#000,stroke:#000
+    style End fill:#000,stroke:#000

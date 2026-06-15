@@ -1,0 +1,58 @@
+/* Receipt Print Styles for Thermal Printers (58mm / 80mm) */
+
+@media print {
+  /* Hide everything except the receipt */
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-print,
+  .receipt-print * {
+    visibility: visible;
+  }
+
+  .receipt-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm; /* Standard thermal paper width, change to 80mm if needed */
+    margin: 0;
+    padding: 2mm;
+    background: white !important;
+    color: black !important;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove page margins */
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+
+  /* Ensure no headers/footers */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hide print-unfriendly elements */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* For 80mm thermal printers, uncomment below: */
+/*
+@media print {
+  .receipt-print {
+    width: 72mm;
+  }
+  
+  @page {
+    size: 80mm auto;
+  }
+}
+*/

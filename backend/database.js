@@ -1,0 +1,314 @@
+const Database = require('better-sqlite3');
+const path = require('path');
+
+// Support custom DB path via env var (useful for Railway volumes)
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'kiosk.db');
+const db = new Database(dbPath);
+
+// Initialize Schema
+db.exec(`
+  CREATE TABLE IF NOT EXISTS categories (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    price REAL NOT NULL,
+    description TEXT,
+    image TEXT,
+    modifiers TEXT,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    total REAL NOT NULL,
+    status TEXT DEFAULT 'pending',
+    customer_name TEXT,
+    customer_phone TEXT,
+    payment_method TEXT DEFAULT 'simulated',
+    payment_transaction_id TEXT,
+    payment_status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER,
+    product_title TEXT NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    price_at_time REAL NOT NULL,
+    modifiers_json TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+  );
+`);
+
+// Migration: Add new columns if they don't exist
+const columns = db.prepare("PRAGMA table_info(orders)").all();
+const columnNames = columns.map(col => col.name);
+
+if (!columnNames.includes('customer_name')) {
+  db.exec('ALTER TABLE orders ADD COLUMN customer_name TEXT');
+}
+if (!columnNames.includes('customer_phone')) {
+  db.exec('ALTER TABLE orders ADD COLUMN customer_phone TEXT');
+}
+if (!columnNames.includes('payment_method')) {
+  db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT DEFAULT "simulated"');
+}
+if (!columnNames.includes('payment_transaction_id')) {
+  db.exec('ALTER TABLE orders ADD COLUMN payment_transaction_id TEXT');
+}
+if (!columnNames.includes('payment_status')) {
+  db.exec('ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT "pending"');
+}
+
+// Migration: Add new columns to order_items if needed
+const itemColumns = db.prepare("PRAGMA table_info(order_items)").all();
+const itemColumnNames = itemColumns.map(col => col.name);
+
+if (!itemColumnNames.includes('product_title')) {
+  db.exec('ALTER TABLE order_items ADD COLUMN product_title TEXT');
+}
+if (!itemColumnNames.includes('modifiers_json')) {
+  db.exec('ALTER TABLE order_items ADD COLUMN modifiers_json TEXT');
+}
+
+// Seed Data if empty
+const count = db.prepare('SELECT count(*) as count FROM categories').get();
+if (count.count === 0) {
+  console.log('Seeding database...');
+  
+  const insertCategory = db.prepare('INSERT INTO categories (id, label, sort_order) VALUES (?, ?, ?)');
+  const insertProduct = db.prepare('INSERT INTO products (category_id, title, price, description, image, modifiers) VALUES (?, ?, ?, ?, ?, ?)');
+
+  const categories = [
+    { id: 'mie-kuah', label: 'Mie Kuah', sort_order: 1 },
+    { id: 'mie-goreng', label: 'Mie Goreng', sort_order: 2 },
+    { id: 'topping', label: 'Topping', sort_order: 3 },
+    { id: 'minuman', label: 'Minuman', sort_order: 4 },
+    { id: 'cemilan', label: 'Cemilan', sort_order: 5 },
+  ];
+
+  categories.forEach(c => insertCategory.run(c.id, c.label, c.sort_order));
+
+  const products = [
+    // === MIE KUAH ===
+    { 
+      category_id: 'mie-kuah', 
+      title: "Mie Ayam Bakso Spesial", 
+      price: 25000, 
+      description: "Mie ayam dengan bakso sapi jumbo, pangsit goreng, dan kuah kaldu gurih.",
+      modifiers: JSON.stringify([
+        { id: 'porsi', name: 'Porsi', required: true, options: [
+          { label: 'Regular', price: 0 },
+          { label: 'Jumbo', price: 8000 }
+        ]},
+        { id: 'mie', name: 'Jenis Mie', required: true, options: [
+          { label: 'Mie Keriting', price: 0 },
+          { label: 'Mie Lurus', price: 0 },
+          { label: 'Mie Lebar', price: 0 }
+        ]},
+        { id: 'level', name: 'Level Pedas', required: false, options: [
+          { label: 'Tidak Pedas', price: 0 },
+          { label: 'Pedas Sedang', price: 0 },
+          { label: 'Pedas Mantap', price: 0 },
+          { label: 'Pedas Gila', price: 2000 }
+        ]}
+      ])
+    },
+    { 
+      category_id: 'mie-kuah', 
+      title: "Mie Yamin Komplit", 
+      price: 28000, 
+      description: "Mie yamin manis dengan ayam suwir, bakso, pangsit rebus, dan kuah terpisah.",
+      modifiers: JSON.stringify([
+        { id: 'porsi', name: 'Porsi', required: true, options: [
+          { label: 'Regular', price: 0 },
+          { label: 'Jumbo', price: 8000 }
+        ]}
+      ])
+    },
+    { 
+      category_id: 'mie-kuah', 
+      title: "Mie Kocok Bandung", 
+      price: 30000, 
+      description: "Mie lebar dengan kikil sapi, tauge, dan kuah kaldu sapi yang kaya rasa.",
+      modifiers: null
+    },
+    { 
+      category_id: 'mie-kuah', 
+      title: "Soto Mie Bogor", 
+      price: 28000, 
+      description: "Mie kuning dengan risol, daging sapi, kikil, tomat, dan kuah santan gurih.",
+      modifiers: null
+    },
+    { 
+      category_id: 'mie-kuah', 
+      title: "Mie Celor Palembang", 
+      price: 26000, 
+      description: "Mie khas Palembang dengan kuah udang kental, telur, dan tauge.",
+      modifiers: null
+    },
+
+    // === MIE GORENG ===
+    { 
+      category_id: 'mie-goreng', 
+      title: "Mie Goreng Jawa", 
+      price: 22000, 
+      description: "Mie goreng bumbu kecap manis khas Jawa dengan telur, sayuran, dan kerupuk.",
+      modifiers: JSON.stringify([
+        { id: 'level', name: 'Level Pedas', required: true, options: [
+          { label: 'Tidak Pedas', price: 0 },
+          { label: 'Pedas Sedang', price: 0 },
+          { label: 'Pedas Mantap', price: 0 }
+        ]},
+        { id: 'tambahan', name: 'Tambahan', required: false, options: [
+          { label: 'Telur Ceplok', price: 5000 },
+          { label: 'Ayam Suwir', price: 8000 },
+          { label: 'Sosis', price: 6000 }
+        ]}
+      ])
+    },
+    { 
+      category_id: 'mie-goreng', 
+      title: "Mie Goreng Aceh", 
+      price: 30000, 
+      description: "Mie tebal goreng dengan bumbu rempah khas Aceh, seafood, dan acar timun.",
+      modifiers: JSON.stringify([
+        { id: 'protein', name: 'Pilihan Protein', required: true, options: [
+          { label: 'Seafood', price: 0 },
+          { label: 'Ayam', price: 0 },
+          { label: 'Daging Sapi', price: 5000 },
+          { label: 'Campur', price: 5000 }
+        ]}
+      ])
+    },
+    { 
+      category_id: 'mie-goreng', 
+      title: "Mie Tek-Tek", 
+      price: 20000, 
+      description: "Mie goreng legendaris ala gerobak dengan telur, sayuran, dan bumbu rahasia.",
+      modifiers: null
+    },
+    { 
+      category_id: 'mie-goreng', 
+      title: "Indomie Goreng Double", 
+      price: 18000, 
+      description: "Dua bungkus Indomie goreng dimasak dengan telur, sosis, dan sayuran segar.",
+      modifiers: JSON.stringify([
+        { id: 'tambahan', name: 'Tambahan', required: false, options: [
+          { label: 'Telur Mata Sapi', price: 4000 },
+          { label: 'Keju Mozarella', price: 7000 },
+          { label: 'Kornet', price: 6000 }
+        ]}
+      ])
+    },
+
+    // === TOPPING ===
+    { 
+      category_id: 'topping', 
+      title: "Bakso Sapi Jumbo (3 pcs)", 
+      price: 12000, 
+      description: "Bakso sapi premium ukuran jumbo, kenyal dan gurih.",
+      modifiers: null
+    },
+    { 
+      category_id: 'topping', 
+      title: "Pangsit Goreng (5 pcs)", 
+      price: 10000, 
+      description: "Pangsit goreng renyah berisi daging ayam cincang.",
+      modifiers: null
+    },
+    { 
+      category_id: 'topping', 
+      title: "Telur Rebus", 
+      price: 5000, 
+      description: "Telur ayam rebus setengah matang.",
+      modifiers: null
+    },
+    { 
+      category_id: 'topping', 
+      title: "Ceker Ayam (2 pcs)", 
+      price: 8000, 
+      description: "Ceker ayam empuk yang dimasak bersama bumbu rempah.",
+      modifiers: null
+    },
+
+    // === MINUMAN ===
+    { 
+      category_id: 'minuman', 
+      title: "Es Teh Manis", 
+      price: 8000, 
+      description: "Teh manis segar dengan es batu, penyegar setelah makan mie pedas.",
+      modifiers: JSON.stringify([
+        { id: 'suhu', name: 'Suhu', required: true, options: [
+          { label: 'Dingin', price: 0 },
+          { label: 'Hangat', price: 0 }
+        ]}
+      ])
+    },
+    { 
+      category_id: 'minuman', 
+      title: "Es Jeruk Peras", 
+      price: 12000, 
+      description: "Jeruk segar diperas langsung dengan gula asli dan es batu.",
+      modifiers: null
+    },
+    { 
+      category_id: 'minuman', 
+      title: "Es Cincau Hijau", 
+      price: 10000, 
+      description: "Cincau hijau segar dengan santan, gula merah, dan es batu.",
+      modifiers: null
+    },
+    { 
+      category_id: 'minuman', 
+      title: "Teh Botol", 
+      price: 6000, 
+      description: "Teh botol kemasan original, dingin menyegarkan.",
+      modifiers: null
+    },
+
+    // === CEMILAN ===
+    { 
+      category_id: 'cemilan', 
+      title: "Lumpia Goreng (4 pcs)", 
+      price: 15000, 
+      description: "Lumpia goreng isi rebung dan udang, disajikan dengan saus sambal.",
+      modifiers: null
+    },
+    { 
+      category_id: 'cemilan', 
+      title: "Tahu Goreng Crispy", 
+      price: 12000, 
+      description: "Tahu sutra goreng renyah dengan taburan bumbu kacang dan kecap.",
+      modifiers: null
+    },
+    { 
+      category_id: 'cemilan', 
+      title: "Siomay Bandung (5 pcs)", 
+      price: 18000, 
+      description: "Siomay ikan tenggiri dengan kentang, tahu, pare, telur, dan bumbu kacang.",
+      modifiers: null
+    },
+  ];
+
+  products.forEach(p => insertProduct.run(
+    p.category_id, 
+    p.title, 
+    p.price, 
+    p.description, 
+    p.image || null,
+    p.modifiers || null
+  ));
+  
+  console.log('Database seeded successfully.');
+}
+
+module.exports = db;

@@ -1,0 +1,19 @@
+flowchart TD
+    Start((●)) --> A["Midtrans Mengirim\nNotifikasi Webhook\n(POST /api/payment/webhook)"]
+    A --> B["Sistem Memverifikasi\nPayload Notifikasi"]
+    B --> C["Mengekstrak Order ID\ndari Format KIOSK-id-timestamp"]
+    C --> D{"Status\nTransaksi?"}
+    D -->|"capture (fraud=accept)\natau settlement"| E["Status = SUCCESS"]
+    E --> F["Update Order:\nstatus = 'confirmed'\npayment_status = 'success'"]
+    F --> G["Log: Order Dikonfirmasi\nvia Webhook"]
+    D -->|"cancel / deny / expire"| H["Status = FAILED"]
+    H --> I["Update Order:\npayment_status = 'failed'"]
+    I --> J["Log: Pembayaran\nGagal"]
+    D -->|"pending"| K["Status = PENDING\nTidak Ada Update"]
+    G --> L["Kirim Response:\n received: true"]
+    J --> L
+    K --> L
+    L --> End((●))
+
+    style Start fill:#000,stroke:#000
+    style End fill:#000,stroke:#000

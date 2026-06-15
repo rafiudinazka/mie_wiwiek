@@ -1,0 +1,228 @@
+<script>
+  import {
+    LayoutDashboard,
+    Package,
+    FolderOpen,
+    ShoppingBag,
+    LogOut,
+    Menu,
+    X,
+  } from "lucide-svelte";
+
+  import AdminDashboard from "./AdminDashboard.svelte";
+  import ProductManager from "./ProductManager.svelte";
+  import CategoryManager from "./CategoryManager.svelte";
+  import OrdersManager from "./OrdersManager.svelte";
+
+  let currentPage = "dashboard";
+  let sidebarOpen = false;
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "products", label: "Produk", icon: Package },
+    { id: "categories", label: "Kategori", icon: FolderOpen },
+    { id: "orders", label: "Riwayat Order", icon: ShoppingBag },
+  ];
+
+  function handleLogout() {
+    window.location.hash = "/";
+    window.location.reload();
+  }
+
+  /** @param {string} id */
+  function selectPage(id) {
+    currentPage = id;
+    sidebarOpen = false;
+  }
+</script>
+
+<div class="admin-layout">
+  <!-- Mobile menu toggle -->
+  <button class="mobile-menu-btn" on:click={() => (sidebarOpen = !sidebarOpen)}>
+    {#if sidebarOpen}
+      <X size={24} />
+    {:else}
+      <Menu size={24} />
+    {/if}
+  </button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" class:open={sidebarOpen}>
+    <div class="sidebar-header">
+      <h2>🍜 Admin</h2>
+    </div>
+
+    <nav class="sidebar-nav">
+      {#each navItems as item}
+        <button
+          class="nav-item"
+          class:active={currentPage === item.id}
+          on:click={() => selectPage(item.id)}
+        >
+          <svelte:component this={item.icon} size={20} />
+          <span>{item.label}</span>
+        </button>
+      {/each}
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item logout" on:click={handleLogout}>
+        <LogOut size={20} />
+        <span>Keluar</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Overlay for mobile -->
+  {#if sidebarOpen}
+    <div class="overlay" role="button" tabindex="-1" on:click={() => (sidebarOpen = false)} on:keydown={(e) => { if (e.key === 'Escape') sidebarOpen = false; }}></div>
+  {/if}
+
+  <!-- Main content -->
+  <main class="admin-main">
+    {#if currentPage === "dashboard"}
+      <AdminDashboard />
+    {:else if currentPage === "products"}
+      <ProductManager />
+    {:else if currentPage === "categories"}
+      <CategoryManager />
+    {:else if currentPage === "orders"}
+      <OrdersManager />
+    {/if}
+  </main>
+</div>
+
+<style>
+  .admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    background: var(--color-bg-secondary);
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+  }
+
+  @media (max-width: 768px) {
+    .mobile-menu-btn {
+      display: flex;
+    }
+  }
+
+  .sidebar {
+    width: 240px;
+    background: var(--color-bg-secondary);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  @media (max-width: 768px) {
+    .overlay {
+      display: block;
+    }
+  }
+
+  .sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+  }
+
+  .nav-item.active {
+    background: rgba(255, 92, 0, 0.15);
+    color: var(--color-accent);
+  }
+
+  .sidebar-footer {
+    padding: 16px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .nav-item.logout:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger);
+  }
+
+  .admin-main {
+    flex: 1;
+    margin-left: 240px;
+    padding: 24px;
+    overflow-y: auto;
+    min-height: 100vh;
+  }
+
+  @media (max-width: 768px) {
+    .admin-main {
+      margin-left: 0;
+      padding: 72px 16px 24px;
+    }
+  }
+</style>

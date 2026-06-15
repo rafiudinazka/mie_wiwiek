@@ -1,0 +1,53 @@
+flowchart TD
+    Start((●)) --> A["Pelanggan Membuka\nHalaman Kiosk"]
+    A --> B["Sistem Menampilkan\nDaftar Menu"]
+    B --> C{"Pelanggan Memilih\nKategori?"}
+    C -->|Ya| D["Sistem Memfilter\nProduk Berdasarkan Kategori"]
+    D --> E["Sistem Menampilkan\nProduk Sesuai Kategori"]
+    C -->|Tidak| E2["Menampilkan\nSemua Produk"]
+    E --> F{"Pelanggan Memilih\nProduk"}
+    E2 --> F
+    F --> G{"Produk Memiliki\nModifier?"}
+    G -->|Ya| H["Sistem Menampilkan\nModal Kustomisasi"]
+    H --> I["Pelanggan Memilih Opsi\n(Ukuran, Ekstra, dsb)"]
+    I --> J["Pelanggan Mengatur\nJumlah Pesanan"]
+    J --> K["Pelanggan Klik\n'Add to Order'"]
+    G -->|Tidak| K2["Produk Langsung\nMasuk Keranjang"]
+    K --> L["Sistem Menambahkan\nke Keranjang"]
+    K2 --> L
+    L --> M{"Pelanggan Ingin\nMenambah Item Lain?"}
+    M -->|Ya| B
+    M -->|Tidak| N["Pelanggan Klik\n'View Order'"]
+    N --> O["Sistem Menampilkan\nCheckout Modal"]
+    O --> P["Step 1: Ringkasan Pesanan\nDitampilkan"]
+    P --> Q["Pelanggan Klik 'Lanjut'"]
+    Q --> R["Step 2: Form Data Pemesan"]
+    R --> S["Pelanggan Mengisi\nNama & No HP"]
+    S --> T{"Validasi\nData Pemesan"}
+    T -->|Tidak Valid| U["Tampilkan\nPesan Error"]
+    U --> S
+    T -->|Valid| V["Pelanggan Klik 'Lanjut'"]
+    V --> W["Step 3: Halaman Pembayaran\nDitampilkan"]
+    W --> X["Pelanggan Klik\n'Bayar Sekarang'"]
+    X --> Y["Sistem Membuat\nOrder di Database"]
+    Y --> Z{"Gateway\nPembayaran?"}
+    Z -->|Midtrans| AA["Sistem Meminta\nSnap Token dari Midtrans"]
+    AA --> AB["Midtrans Menampilkan\nPopup Pembayaran"]
+    AB --> AC{"Status\nPembayaran?"}
+    AC -->|Success| AD["Sistem Konfirmasi\nOrder ke Backend"]
+    AC -->|Pending| AD
+    AC -->|Error| AE["Tampilkan Pesan\n'Pembayaran Gagal'"]
+    AE --> W
+    AC -->|Ditutup User| AF["Order Tetap Pending\nTidak Dikonfirmasi"]
+    AF --> End2((●))
+    Z -->|Simulasi| AG["Sistem Simulasi\nPembayaran 1 detik"]
+    AG --> AD
+    AD --> AH["Step 4: Konfirmasi Sukses\nDitampilkan"]
+    AH --> AI["Menampilkan\nNomor Order"]
+    AI --> AJ["Pelanggan Klik\n'Selesai'"]
+    AJ --> AK["Keranjang Direset"]
+    AK --> End((●))
+
+    style Start fill:#000,stroke:#000
+    style End fill:#000,stroke:#000
+    style End2 fill:#000,stroke:#000

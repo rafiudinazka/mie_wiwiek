@@ -1,0 +1,56 @@
+graph TB
+    subgraph "Sistem Self-Service Kiosk"
+        UC1["UC01: Melihat Daftar Menu"]
+        UC2["UC02: Memfilter Menu\nBerdasarkan Kategori"]
+        UC3["UC03: Kustomisasi Produk\n(Modifier/Add-on)"]
+        UC4["UC04: Menambahkan Produk\nke Keranjang"]
+        UC5["UC05: Melihat Ringkasan Pesanan"]
+        UC6["UC06: Mengisi Data Pemesan"]
+        UC7["UC07: Melakukan Pembayaran"]
+        UC8["UC08: Menerima Konfirmasi Pesanan"]
+
+        UC9["UC09: Melihat Pesanan Masuk"]
+        UC10["UC10: Mencetak Struk Pesanan"]
+        UC11["UC11: Menyelesaikan Pesanan"]
+        UC12["UC12: Melihat Riwayat\nPesanan Selesai"]
+
+        UC13["UC13: Login Admin dengan PIN"]
+        UC14["UC14: Melihat Dashboard\nStatistik"]
+        UC15["UC15: Kelola Produk\n(CRUD)"]
+        UC16["UC16: Kelola Kategori\n(CRUD)"]
+        UC17["UC17: Melihat Riwayat\nSemua Pesanan"]
+        UC18["UC18: Filter Pesanan\nBerdasarkan Status"]
+
+        UC19["UC19: Memproses Pembayaran\nvia Midtrans Snap"]
+        UC20["UC20: Menerima Notifikasi\nWebhook Pembayaran"]
+    end
+
+    Customer(("🧑 Pelanggan"))
+    Cashier(("👨‍💼 Kasir"))
+    Admin(("🔑 Admin"))
+    Midtrans(("🏦 Midtrans\nPayment Gateway"))
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Customer --> UC4
+    Customer --> UC5
+    Customer --> UC6
+    Customer --> UC7
+    Customer --> UC8
+
+    Cashier --> UC9
+    Cashier --> UC10
+    Cashier --> UC11
+    Cashier --> UC12
+
+    Admin --> UC13
+    Admin --> UC14
+    Admin --> UC15
+    Admin --> UC16
+    Admin --> UC17
+    Admin --> UC18
+
+    UC7 --> UC19
+    UC19 --> Midtrans
+    Midtrans --> UC20

@@ -1,0 +1,21 @@
+flowchart TD
+    Start((●)) --> A["Kasir Mengakses\nHalaman Kasir\n(#/cashier)"]
+    A --> B["Sistem Memuat Daftar\nPesanan Terkonfirmasi"]
+    B --> C["Sistem Melakukan\nPolling Setiap 3 Detik"]
+    C --> D{"Ada Pesanan\nBaru?"}
+    D -->|Ya| E["Sistem Memutar\nSuara Notifikasi"]
+    E --> F["Menampilkan Daftar\nPesanan Masuk"]
+    D -->|Tidak| F2["Menampilkan\n'Tidak Ada Pesanan Baru'"]
+    F2 --> C
+    F --> G{"Kasir Memilih\nAksi?"}
+    G -->|Cetak Struk| H["Sistem Menampilkan\nReceipt untuk Print"]
+    H --> I["Kasir Mencetak\nStruk Pesanan"]
+    I --> G
+    G -->|Selesaikan Pesanan| J["Sistem Mengubah Status\nOrder menjadi 'completed'"]
+    J --> K["Order Berpindah ke\nDaftar 'Selesai Hari Ini'"]
+    K --> C
+    G -->|Keluar| L["Kasir Kembali\nke Halaman Utama Kiosk"]
+    L --> End((●))
+
+    style Start fill:#000,stroke:#000
+    style End fill:#000,stroke:#000
