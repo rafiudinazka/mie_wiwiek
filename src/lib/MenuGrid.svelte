@@ -35,4 +35,11 @@
     gap: var(--spacing-lg);
     margin-top: var(--spacing-md);
   }
+
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-sm);
+    }
+  }
 </style>

@@ -135,4 +135,42 @@
     box-shadow: 0 2px 8px rgba(212, 50, 28, 0.3);
     transition: transform 0.1s ease;
   }
+
+  @media (max-width: 600px) {
+    .image-area {
+      height: 120px;
+    }
+
+    .content {
+      padding: var(--spacing-sm);
+    }
+
+    h3 {
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    p {
+      font-size: 0.75rem;
+      margin-bottom: var(--spacing-sm);
+      /* Truncate long descriptions to 2 lines on mobile */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .actions {
+      margin-top: auto;
+    }
+
+    .price {
+      font-size: 0.95rem;
+    }
+
+    .add-btn {
+      width: 32px;
+      height: 32px;
+    }
+  }
 </style>
