@@ -3,10 +3,12 @@
   import { fly } from "svelte/transition";
   import { formatRupiah } from "../utils.js";
 
+  /** @type {any} */
   export let order = {};
   export let onPrint = () => {};
   export let onComplete = () => {};
 
+  /** @param {string} dateStr */
   function formatTime(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleTimeString("id-ID", {
@@ -15,6 +17,7 @@
     });
   }
 
+  /** @param {string} modifiersJson */
   function parseModifiers(modifiersJson) {
     if (!modifiersJson) return null;
     try {
@@ -23,11 +26,18 @@
       return null;
     }
   }
+  
+  $: hasAddons = order.items && order.items.some((/** @type {any} */ i) => i.is_addon);
 </script>
 
-<div class="order-card" transition:fly={{ y: 20, duration: 300 }}>
+<div class="order-card" class:has-addons={hasAddons} transition:fly={{ y: 20, duration: 300 }}>
   <div class="card-header">
-    <div class="order-id">Order #{order.id}</div>
+    <div class="order-id">
+      Order #{order.id}
+      {#if hasAddons}
+        <span class="addon-badge-header">Ada Tambahan</span>
+      {/if}
+    </div>
     <div class="order-time">
       <Clock size={14} />
       {formatTime(order.created_at)}
@@ -52,10 +62,13 @@
       {#each order.items as item}
         <div class="item-row">
           <div class="item-details">
-            <span class="item-name">
+            <span class="item-name" class:is-addon={item.is_addon}>
               {item.product_title || item.title}
               {#if item.quantity > 1}
                 <span class="qty">x{item.quantity}</span>
+              {/if}
+              {#if item.is_addon}
+                <span class="addon-tag">Baru</span>
               {/if}
             </span>
             {#if item.modifiers_json}
@@ -112,6 +125,11 @@
     transition: all 0.2s;
   }
 
+  .order-card.has-addons {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px rgba(255, 92, 0, 0.2);
+  }
+
   .order-card:hover {
     border-color: rgba(255, 255, 255, 0.15);
   }
@@ -127,6 +145,18 @@
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .addon-badge-header {
+    font-size: 0.7rem;
+    background: var(--color-accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
   }
 
   .order-time {
@@ -185,6 +215,22 @@
 
   .item-name {
     font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .item-name.is-addon {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .addon-tag {
+    font-size: 0.65rem;
+    background: rgba(255, 92, 0, 0.2);
+    color: var(--color-accent);
+    padding: 2px 4px;
+    border-radius: 4px;
   }
 
   .qty {

@@ -4,7 +4,7 @@ import './receipt-print.css'
 import App from './App.svelte'
 
 const app = mount(App, {
-  target: document.getElementById('app'),
+  target: /** @type {Element} */ (document.getElementById('app')),
 })
 
 export default app

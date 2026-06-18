@@ -9,6 +9,7 @@
   let isLoggedIn = false;
 
   // Lazy load admin dashboard after login
+  /** @type {any} */
   let AdminDashboard = null;
 
   async function handleLogin() {
@@ -43,13 +44,13 @@
     }
   }
 
-  function handlePinInput(e) {
+  function handlePinInput(/** @type {any} */ e) {
     // Only allow numbers
     pin = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
     error = "";
   }
 
-  function handleKeydown(e) {
+  function handleKeydown(/** @type {any} */ e) {
     if (e.key === "Enter" && pin.length === 4) {
       handleLogin();
     }

@@ -5,8 +5,10 @@
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
+  /** @type {any[]} */
   let orders = [];
   let loading = true;
+  /** @type {any} */
   let selectedOrder = null;
   let filter = "all"; // all, confirmed, completed
 
@@ -30,7 +32,7 @@
     }
   }
 
-  async function viewOrder(order) {
+  async function viewOrder(/** @type {any} */ order) {
     try {
       const res = await apiFetch(`/api/orders/${order.id}`);
       if (res.ok) {
@@ -45,7 +47,7 @@
     selectedOrder = null;
   }
 
-  function formatDate(dateStr) {
+  function formatDate(/** @type {any} */ dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleDateString("id-ID", {
       day: "2-digit",
@@ -56,7 +58,7 @@
     });
   }
 
-  function getStatusColor(status) {
+  function getStatusColor(/** @type {any} */ status) {
     switch (status) {
       case "pending":
         return "#f59e0b";
@@ -69,7 +71,7 @@
     }
   }
 
-  function getStatusLabel(status) {
+  function getStatusLabel(/** @type {any} */ status) {
     switch (status) {
       case "pending":
         return "Menunggu Bayar";
@@ -82,7 +84,7 @@
     }
   }
 
-  function parseModifiers(modifiersJson) {
+  function parseModifiers(/** @type {any} */ modifiersJson) {
     if (!modifiersJson) return null;
     try {
       return JSON.parse(modifiersJson);

@@ -4,9 +4,11 @@
   import { fade, fly } from "svelte/transition";
   import { apiFetch } from "../api.js";
 
+  /** @type {any[]} */
   let categories = [];
   let loading = true;
   let showModal = false;
+  /** @type {any} */
   let editingCategory = null;
 
   let formData = {
@@ -43,7 +45,7 @@
     showModal = true;
   }
 
-  function openEditModal(category) {
+  function openEditModal(/** @type {any} */ category) {
     editingCategory = category;
     formData = {
       id: category.id,
@@ -113,7 +115,7 @@
     }
   }
 
-  async function handleDelete(category) {
+  async function handleDelete(/** @type {any} */ category) {
     if (
       !confirm(
         `Hapus kategori "${category.label}"? Pastikan tidak ada produk dalam kategori ini.`,

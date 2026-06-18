@@ -1,5 +1,7 @@
 <script>
-  import { Soup, Info } from 'lucide-svelte';
+  import { Soup, Search } from 'lucide-svelte';
+  
+  export let onFindOrder = () => {};
 </script>
 
 <header>
@@ -13,9 +15,9 @@
     </div>
   </div>
 
-  <button class="help-btn">
-    <Info size={18} />
-    <span class="hide-mobile">Bantuan</span>
+  <button class="action-btn" on:click={onFindOrder}>
+    <Search size={18} />
+    <span class="hide-mobile">Edit Pesanan</span>
   </button>
 </header>
 
@@ -25,12 +27,12 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-md) var(--spacing-xl);
-    background: rgba(15, 15, 15, 0.65);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .brand {
@@ -44,7 +46,7 @@
     padding: 8px;
     border-radius: var(--radius-sm);
     display: flex;
-    box-shadow: 0 0 15px var(--color-accent-subtle);
+    box-shadow: 0 2px 8px rgba(212, 50, 28, 0.25);
   }
 
   h1 {
@@ -52,6 +54,7 @@
     font-weight: 700;
     line-height: 1;
     margin: 0;
+    color: var(--color-text-primary);
   }
 
   .brand-text span {
@@ -60,17 +63,24 @@
     font-weight: 500;
   }
 
-  .help-btn {
+  .action-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
     padding: 8px 16px;
     border-radius: var(--radius-full);
     color: var(--color-text-primary);
     font-size: 0.875rem;
     font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
   }
 
   @media (max-width: 600px) {

@@ -4,21 +4,21 @@
   import { formatRupiah } from "./utils.js";
 
   export let isOpen = false;
-  /** @type {Object|null} */
+  /** @type {any} */
   export let product = {};
   export let onClose = () => {};
-  export let onAddToCart = (item) => {};
+  export let onAddToCart = (/** @type {any} */ item) => {};
 
   let quantity = 1;
+  /** @type {Record<string, any>} */
   let selectedOptions = {};
 
   // Reset selections when product changes
   $: if (product) {
     quantity = 1;
     selectedOptions = {};
-    // Pre-select defaults if needed (e.g. first option of required modifiers)
     if (product.modifiers) {
-      product.modifiers.forEach((mod) => {
+      product.modifiers.forEach((/** @type {any} */ mod) => {
         if (mod.required && mod.options.length > 0) {
           selectedOptions[mod.id] = mod.options[0];
         }
@@ -29,23 +29,26 @@
   $: basePrice = product ? product.price : 0;
 
   $: modifiersPrice = Object.values(selectedOptions).reduce((sum, opt) => {
-    // If option is array (checkboxes), sum them up
     if (Array.isArray(opt)) {
       return sum + opt.reduce((s, o) => s + o.price, 0);
     }
-    // Single option (radio)
     return sum + (opt ? opt.price : 0);
   }, 0);
 
   $: totalPrice = (basePrice + modifiersPrice) * quantity;
 
+  /**
+   * @param {string} modifierId
+   * @param {any} option
+   * @param {boolean} isMulti
+   */
   function handleOptionSelect(modifierId, option, isMulti) {
     if (isMulti) {
       const current = selectedOptions[modifierId] || [];
-      const exists = current.find((o) => o.label === option.label);
+      const exists = current.find((/** @type {any} */ o) => o.label === option.label);
       if (exists) {
         selectedOptions[modifierId] = current.filter(
-          (o) => o.label !== option.label,
+          (/** @type {any} */ o) => o.label !== option.label,
         );
       } else {
         selectedOptions[modifierId] = [...current, option];
@@ -53,7 +56,7 @@
     } else {
       selectedOptions[modifierId] = option;
     }
-    selectedOptions = { ...selectedOptions }; // Trigger reactivity
+    selectedOptions = { ...selectedOptions };
   }
 
   function handleAdd() {
@@ -61,7 +64,7 @@
       ...product,
       quantity,
       selectedOptions,
-      totalPrice: totalPrice / quantity, // Unit price including modifiers
+      totalPrice: totalPrice / quantity,
     });
     onClose();
   }
@@ -78,7 +81,7 @@
       transition:fly={{ y: 100, duration: 300 }}
       on:click|stopPropagation
       on:keydown|stopPropagation
-      role="document"
+      role="dialog"
       tabindex="-1"
     >
       <button class="close-btn" on:click={onClose}>
@@ -105,20 +108,19 @@
               <div class="mod-header">
                 <h3>{mod.name}</h3>
                 {#if mod.required}
-                  <span class="badge required">Required</span>
+                  <span class="badge required">Wajib</span>
                 {:else}
-                  <span class="badge optional">Optional</span>
+                  <span class="badge optional">Opsional</span>
                 {/if}
               </div>
 
               <div class="options-grid">
                 {#each mod.options as opt}
-                  <!-- Unique ID for labels -->
                   {@const uniqueId = `${mod.id}-${opt.label}`}
                   {@const isSelected = mod.required
                     ? selectedOptions[mod.id]?.label === opt.label
                     : (selectedOptions[mod.id] || []).find(
-                        (o) => o.label === opt.label,
+                        (/** @type {any} */ o) => o.label === opt.label,
                       )}
 
                   <label class="option-card" class:selected={isSelected}>
@@ -133,8 +135,7 @@
                     <div class="opt-content">
                       <span class="opt-name">{opt.label}</span>
                       {#if opt.price > 0}
-                        <span class="opt-price">+{formatRupiah(opt.price)}</span
-                        >
+                        <span class="opt-price">+{formatRupiah(opt.price)}</span>
                       {/if}
                     </div>
                   </label>
@@ -144,7 +145,7 @@
           {/each}
         {:else}
           <div class="no-options">
-            No customization options available for this item.
+            Tidak ada opsi kustomisasi untuk item ini.
           </div>
         {/if}
       </div>
@@ -161,7 +162,7 @@
         </div>
 
         <button class="add-cart-btn" on:click={handleAdd}>
-          <span>Add to Order</span>
+          <span>Tambah ke Pesanan</span>
           <span class="price">{formatRupiah(totalPrice)}</span>
         </button>
       </div>
@@ -172,20 +173,17 @@
 <style>
   .backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
     z-index: 200;
     display: flex;
-    align-items: flex-end; /* Bottom sheet on mobile */
+    align-items: flex-end;
     justify-content: center;
   }
 
   .modal {
-    background: #1e1e1e;
+    background: var(--color-bg-secondary);
     width: 100%;
     max-width: 600px;
     height: 85vh;
@@ -193,14 +191,11 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.12);
   }
 
-  /* Desktop center modal */
   @media (min-width: 600px) {
-    .backdrop {
-      align-items: center;
-    }
+    .backdrop { align-items: center; }
     .modal {
       height: auto;
       max-height: 85vh;
@@ -210,30 +205,31 @@
 
   .close-btn {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    width: 32px;
-    height: 32px;
+    top: 16px; right: 16px;
+    background: var(--color-bg-primary);
+    color: var(--color-text-secondary);
+    width: 32px; height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
+    border: 1px solid var(--color-border);
   }
 
   .header {
     padding: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .title-group h2 {
     margin: 0;
     font-size: 1.5rem;
+    color: var(--color-text-primary);
   }
+
   .desc {
-    color: #888;
+    color: var(--color-text-secondary);
     font-size: 0.9rem;
     margin-top: 4px;
   }
@@ -258,6 +254,7 @@
   .mod-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
+    color: var(--color-text-primary);
   }
 
   .badge {
@@ -267,13 +264,16 @@
     text-transform: uppercase;
     font-weight: 700;
   }
+
   .badge.required {
     background: var(--color-accent);
     color: #fff;
   }
+
   .badge.optional {
-    background: #333;
-    color: #aaa;
+    background: var(--color-bg-primary);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
   }
 
   .options-grid {
@@ -283,8 +283,8 @@
   }
 
   .option-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
     padding: 12px;
     border-radius: 12px;
     cursor: pointer;
@@ -294,14 +294,16 @@
     position: relative;
   }
 
+  .option-card:hover {
+    border-color: var(--color-border-hover);
+  }
+
   .option-card.selected {
-    background: rgba(255, 92, 0, 0.1);
+    background: var(--color-accent-subtle);
     border-color: var(--color-accent);
   }
 
-  .option-card input {
-    display: none;
-  }
+  .option-card input { display: none; }
 
   .opt-content {
     display: flex;
@@ -311,17 +313,25 @@
   .opt-name {
     font-weight: 500;
     font-size: 0.95rem;
+    color: var(--color-text-primary);
   }
+
   .opt-price {
     font-size: 0.85rem;
     color: var(--color-accent);
     margin-top: 2px;
   }
 
+  .no-options {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 24px;
+  }
+
   .footer {
     padding: 24px;
-    background: #1e1e1e;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
     display: flex;
     gap: 16px;
   }
@@ -330,21 +340,23 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #333;
+    background: var(--color-bg-primary);
     padding: 4px 8px;
     border-radius: 50px;
     font-weight: 700;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
   }
 
   .qty-control button {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: 50%;
-    background: #444;
-    color: #fff;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--color-border);
   }
 
   .add-cart-btn {

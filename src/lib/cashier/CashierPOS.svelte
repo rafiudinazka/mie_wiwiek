@@ -14,16 +14,21 @@
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
+  /** @type {any[]} */
   let orders = [];
+  /** @type {any[]} */
   let completedOrders = [];
   let loading = true;
+  /** @type {any} */
   let pollInterval;
   let lastOrderCount = 0;
 
   // Audio notification
+  /** @type {any} */
   let notificationSound;
 
   // Receipt printing
+  /** @type {any} */
   let printingOrder = null;
   let receiptComponent;
 
@@ -87,7 +92,7 @@
     }
   }
 
-  async function handlePrint(order) {
+  async function handlePrint(/** @type {any} */ order) {
     printingOrder = order;
     // Wait for DOM update then print
     await new Promise((r) => setTimeout(r, 100));
@@ -95,7 +100,7 @@
     printingOrder = null;
   }
 
-  async function handleComplete(orderId) {
+  async function handleComplete(/** @type {any} */ orderId) {
     try {
       const res = await apiFetch(
         `/api/orders/${orderId}/complete`,

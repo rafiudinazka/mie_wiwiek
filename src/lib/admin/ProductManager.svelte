@@ -5,10 +5,13 @@
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
+  /** @type {any[]} */
   let products = [];
+  /** @type {any[]} */
   let categories = [];
   let loading = true;
   let showModal = false;
+  /** @type {any} */
   let editingProduct = null;
 
   // Form data
@@ -67,7 +70,7 @@
     showModal = true;
   }
 
-  function openEditModal(product) {
+  function openEditModal(/** @type {any} */ product) {
     editingProduct = product;
     formData = {
       title: product.title,
@@ -141,7 +144,7 @@
     }
   }
 
-  async function handleDelete(product) {
+  async function handleDelete(/** @type {any} */ product) {
     if (!confirm(`Hapus produk "${product.title}"?`)) return;
 
     try {
@@ -159,7 +162,7 @@
     }
   }
 
-  function getCategoryLabel(categoryId) {
+  function getCategoryLabel(/** @type {any} */ categoryId) {
     return categories.find((c) => c.id === categoryId)?.label || categoryId;
   }
 </script>

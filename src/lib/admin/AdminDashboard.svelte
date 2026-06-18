@@ -10,6 +10,7 @@
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
+  /** @type {Record<string, any>} */
   let stats = {
     totalProducts: 0,
     totalCategories: 0,
@@ -38,35 +39,35 @@
       label: "Total Produk",
       icon: Package,
       color: "#3b82f6",
-      format: (v) => v,
+      format: (/** @type {any} */ v) => v,
     },
     {
       key: "totalCategories",
       label: "Kategori",
       icon: FolderOpen,
       color: "#8b5cf6",
-      format: (v) => v,
+      format: (/** @type {any} */ v) => v,
     },
     {
       key: "todayOrdersCount",
       label: "Order Hari Ini",
       icon: ShoppingBag,
       color: "#22c55e",
-      format: (v) => v,
+      format: (/** @type {any} */ v) => v,
     },
     {
       key: "todayRevenue",
       label: "Revenue Hari Ini",
       icon: DollarSign,
       color: "#f59e0b",
-      format: (v) => formatRupiah(v),
+      format: (/** @type {any} */ v) => formatRupiah(v),
     },
     {
       key: "pendingOrders",
       label: "Pesanan Aktif",
       icon: TrendingUp,
       color: "#ef4444",
-      format: (v) => v,
+      format: (/** @type {any} */ v) => v,
     },
   ];
 </script>

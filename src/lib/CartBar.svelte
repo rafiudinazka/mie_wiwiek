@@ -27,7 +27,7 @@
     </div>
 
     <div class="action-group">
-      View Order
+      Lihat Pesanan
       <ChevronRight size={24} />
     </div>
   </button>
@@ -42,8 +42,8 @@
     padding: var(--spacing-lg);
     background: linear-gradient(
       to top,
-      rgba(18, 18, 18, 1) 0%,
-      rgba(18, 18, 18, 0) 100%
+      rgba(245, 245, 240, 1) 0%,
+      rgba(245, 245, 240, 0) 100%
     );
     pointer-events: none;
     display: flex;
@@ -55,8 +55,8 @@
     pointer-events: auto;
     width: 100%;
     max-width: 600px;
-    background: #333;
-    color: #666;
+    background: #ccc;
+    color: #999;
     padding: 12px var(--spacing-lg);
     border-radius: var(--radius-full);
     display: flex;
@@ -71,7 +71,7 @@
   .cart-btn.visible {
     background: var(--color-accent);
     color: #fff;
-    box-shadow: 0 10px 40px rgba(255, 92, 0, 0.4);
+    box-shadow: 0 6px 24px rgba(212, 50, 28, 0.35);
     transform: translateY(0);
     opacity: 1;
   }
@@ -83,7 +83,7 @@
   }
 
   .count-badge {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     width: 36px;
     height: 36px;
     border-radius: 50%;

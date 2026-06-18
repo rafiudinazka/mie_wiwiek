@@ -33,7 +33,8 @@ db.exec(`
     payment_method TEXT DEFAULT 'simulated',
     payment_transaction_id TEXT,
     payment_status TEXT DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS order_items (
@@ -44,6 +45,7 @@ db.exec(`
     quantity INTEGER DEFAULT 1,
     price_at_time REAL NOT NULL,
     modifiers_json TEXT,
+    is_addon BOOLEAN DEFAULT 0,
     FOREIGN KEY (order_id) REFERENCES orders(id)
   );
 `);
@@ -67,6 +69,9 @@ if (!columnNames.includes('payment_transaction_id')) {
 if (!columnNames.includes('payment_status')) {
   db.exec('ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT "pending"');
 }
+if (!columnNames.includes('updated_at')) {
+  db.exec('ALTER TABLE orders ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+}
 
 // Migration: Add new columns to order_items if needed
 const itemColumns = db.prepare("PRAGMA table_info(order_items)").all();
@@ -77,6 +82,9 @@ if (!itemColumnNames.includes('product_title')) {
 }
 if (!itemColumnNames.includes('modifiers_json')) {
   db.exec('ALTER TABLE order_items ADD COLUMN modifiers_json TEXT');
+}
+if (!itemColumnNames.includes('is_addon')) {
+  db.exec('ALTER TABLE order_items ADD COLUMN is_addon BOOLEAN DEFAULT 0');
 }
 
 // Seed Data if empty
@@ -104,6 +112,7 @@ if (count.count === 0) {
       title: "Mie Ayam Bakso Spesial", 
       price: 25000, 
       description: "Mie ayam dengan bakso sapi jumbo, pangsit goreng, dan kuah kaldu gurih.",
+      image: "/images/mie_ayam_bakso_1781020663641.png",
       modifiers: JSON.stringify([
         { id: 'porsi', name: 'Porsi', required: true, options: [
           { label: 'Regular', price: 0 },
@@ -127,6 +136,7 @@ if (count.count === 0) {
       title: "Mie Yamin Komplit", 
       price: 28000, 
       description: "Mie yamin manis dengan ayam suwir, bakso, pangsit rebus, dan kuah terpisah.",
+      image: "/images/mie_yamin_komplit_1781020736159.png",
       modifiers: JSON.stringify([
         { id: 'porsi', name: 'Porsi', required: true, options: [
           { label: 'Regular', price: 0 },
@@ -139,6 +149,7 @@ if (count.count === 0) {
       title: "Mie Kocok Bandung", 
       price: 30000, 
       description: "Mie lebar dengan kikil sapi, tauge, dan kuah kaldu sapi yang kaya rasa.",
+      image: "/images/mie_kocok_bandung_1781020834237.png",
       modifiers: null
     },
     { 
@@ -146,6 +157,7 @@ if (count.count === 0) {
       title: "Soto Mie Bogor", 
       price: 28000, 
       description: "Mie kuning dengan risol, daging sapi, kikil, tomat, dan kuah santan gurih.",
+      image: "/images/soto_mie_bogor_1781020757875.png",
       modifiers: null
     },
     { 
@@ -153,6 +165,7 @@ if (count.count === 0) {
       title: "Mie Celor Palembang", 
       price: 26000, 
       description: "Mie khas Palembang dengan kuah udang kental, telur, dan tauge.",
+      image: "/images/mie_celor_palembang_1781020846324.png",
       modifiers: null
     },
 
@@ -162,6 +175,7 @@ if (count.count === 0) {
       title: "Mie Goreng Jawa", 
       price: 22000, 
       description: "Mie goreng bumbu kecap manis khas Jawa dengan telur, sayuran, dan kerupuk.",
+      image: "/images/mie_goreng_jawa_1781020674734.png",
       modifiers: JSON.stringify([
         { id: 'level', name: 'Level Pedas', required: true, options: [
           { label: 'Tidak Pedas', price: 0 },
@@ -180,6 +194,7 @@ if (count.count === 0) {
       title: "Mie Goreng Aceh", 
       price: 30000, 
       description: "Mie tebal goreng dengan bumbu rempah khas Aceh, seafood, dan acar timun.",
+      image: "/images/mie_goreng_aceh_1781020747769.png",
       modifiers: JSON.stringify([
         { id: 'protein', name: 'Pilihan Protein', required: true, options: [
           { label: 'Seafood', price: 0 },
@@ -194,6 +209,7 @@ if (count.count === 0) {
       title: "Mie Tek-Tek", 
       price: 20000, 
       description: "Mie goreng legendaris ala gerobak dengan telur, sayuran, dan bumbu rahasia.",
+      image: "/images/mie_tek_tek_1781020858366.png",
       modifiers: null
     },
     { 
@@ -201,6 +217,7 @@ if (count.count === 0) {
       title: "Indomie Goreng Double", 
       price: 18000, 
       description: "Dua bungkus Indomie goreng dimasak dengan telur, sosis, dan sayuran segar.",
+      image: "/images/indomie_goreng_double_1781020871853.png",
       modifiers: JSON.stringify([
         { id: 'tambahan', name: 'Tambahan', required: false, options: [
           { label: 'Telur Mata Sapi', price: 4000 },
@@ -216,6 +233,7 @@ if (count.count === 0) {
       title: "Bakso Sapi Jumbo (3 pcs)", 
       price: 12000, 
       description: "Bakso sapi premium ukuran jumbo, kenyal dan gurih.",
+      image: "/images/bakso_sapi_jumbo_1781020883882.png",
       modifiers: null
     },
     { 
@@ -223,6 +241,7 @@ if (count.count === 0) {
       title: "Pangsit Goreng (5 pcs)", 
       price: 10000, 
       description: "Pangsit goreng renyah berisi daging ayam cincang.",
+      image: "/images/pangsit_goreng_1781020904989.png",
       modifiers: null
     },
     { 
@@ -230,6 +249,7 @@ if (count.count === 0) {
       title: "Telur Rebus", 
       price: 5000, 
       description: "Telur ayam rebus setengah matang.",
+      image: "/images/telur_rebus_1781020917976.png",
       modifiers: null
     },
     { 
@@ -237,6 +257,7 @@ if (count.count === 0) {
       title: "Ceker Ayam (2 pcs)", 
       price: 8000, 
       description: "Ceker ayam empuk yang dimasak bersama bumbu rempah.",
+      image: "/images/ceker_ayam_1781020930321.png",
       modifiers: null
     },
 
@@ -246,6 +267,7 @@ if (count.count === 0) {
       title: "Es Teh Manis", 
       price: 8000, 
       description: "Teh manis segar dengan es batu, penyegar setelah makan mie pedas.",
+      image: "/images/es_teh_manis_1781020687153.png",
       modifiers: JSON.stringify([
         { id: 'suhu', name: 'Suhu', required: true, options: [
           { label: 'Dingin', price: 0 },
@@ -258,6 +280,7 @@ if (count.count === 0) {
       title: "Es Jeruk Peras", 
       price: 12000, 
       description: "Jeruk segar diperas langsung dengan gula asli dan es batu.",
+      image: "/images/es_jeruk_peras_1781020769727.png",
       modifiers: null
     },
     { 
@@ -281,6 +304,7 @@ if (count.count === 0) {
       title: "Lumpia Goreng (4 pcs)", 
       price: 15000, 
       description: "Lumpia goreng isi rebung dan udang, disajikan dengan saus sambal.",
+      image: "/images/lumpia_goreng_1781020714218.png",
       modifiers: null
     },
     { 
@@ -288,6 +312,7 @@ if (count.count === 0) {
       title: "Tahu Goreng Crispy", 
       price: 12000, 
       description: "Tahu sutra goreng renyah dengan taburan bumbu kacang dan kecap.",
+      image: "/images/tahu_goreng_crispy_1781020780907.png",
       modifiers: null
     },
     { 
@@ -295,6 +320,7 @@ if (count.count === 0) {
       title: "Siomay Bandung (5 pcs)", 
       price: 18000, 
       description: "Siomay ikan tenggiri dengan kentang, tahu, pare, telur, dan bumbu kacang.",
+      image: "/images/siomay_bandung_1781020701411.png",
       modifiers: null
     },
   ];

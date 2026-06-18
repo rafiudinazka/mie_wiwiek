@@ -5,7 +5,8 @@
   import CategoryTabs from "./lib/CategoryTabs.svelte";
   import CheckoutModal from "./lib/CheckoutModal.svelte";
   import ProductCustomizer from "./lib/ProductCustomizer.svelte";
-  import { cart, cartCount, cartTotal } from "./lib/cart.js";
+  import FindOrderModal from "./lib/FindOrderModal.svelte";
+  import { cart, cartCount, cartTotal, addonOrder } from "./lib/cart.js";
   import { apiFetch } from "./lib/api.js";
 
   // Routing
@@ -53,6 +54,7 @@
   let activeCategory = "all";
   let isCheckoutOpen = false;
   let isCustomizerOpen = false;
+  let isFindOrderOpen = false;
   /** @type {any} */
   let selectedProductForCustomization = null;
 
@@ -97,6 +99,7 @@
   function handleCheckoutComplete() {
     isCheckoutOpen = false;
     cart.reset();
+    addonOrder.set(null);
   }
 </script>
 
@@ -104,6 +107,7 @@
   <Layout
     cartState={{ count: $cartCount, total: $cartTotal }}
     onCartClick={() => (isCheckoutOpen = true)}
+    onFindOrder={() => (isFindOrderOpen = true)}
   >
     <section>
       <div style="margin-bottom: var(--spacing-lg);">
@@ -115,7 +119,7 @@
           style:align-items="center"
           style:gap="var(--spacing-sm)"
         >
-          <span style:color="var(--color-accent)">Pesan</span> Sekarang
+          <span style:color="var(--color-accent)">Menu</span> Mie Wiwiek
         </h2>
         <CategoryTabs
           categories={CATEGORIES}
@@ -142,6 +146,11 @@
           selectedProductForCustomization = null;
         }}
         onAddToCart={handleCustomizedAdd}
+      />
+
+      <FindOrderModal
+        isOpen={isFindOrderOpen}
+        onClose={() => (isFindOrderOpen = false)}
       />
     </section>
   </Layout>
@@ -180,7 +189,7 @@
   .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
+    border: 4px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;

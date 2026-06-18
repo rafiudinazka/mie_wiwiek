@@ -173,6 +173,50 @@ app.get('/api/orders/confirmed', (req, res) => {
   }
 });
 
+// Search order by ID (exact match)
+app.get('/api/orders/search', (req, res) => {
+  const { id, phone } = req.query;
+  
+  try {
+    if (id) {
+      // Search by order ID - exact match, single result
+      const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
+      if (!order) {
+        return res.status(404).json({ error: 'Pesanan tidak ditemukan' });
+      }
+      const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+      return res.json({ ...order, items });
+    }
+    
+    if (phone) {
+      // Search by phone - may return multiple orders
+      const orders = db.prepare(`
+        SELECT * FROM orders 
+        WHERE customer_phone LIKE ? 
+        AND status IN ('pending', 'confirmed')
+        ORDER BY created_at DESC 
+        LIMIT 10
+      `).all(`%${phone}%`);
+      
+      if (orders.length === 0) {
+        return res.status(404).json({ error: 'Tidak ada pesanan aktif untuk nomor ini' });
+      }
+      
+      // Attach items to each order
+      const ordersWithItems = orders.map(order => {
+        const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+        return { ...order, items };
+      });
+      
+      return res.json(ordersWithItems);
+    }
+    
+    return res.status(400).json({ error: 'Parameter id atau phone diperlukan' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get single order with items
 app.get('/api/orders/:id', (req, res) => {
   const { id } = req.params;
@@ -233,6 +277,79 @@ app.post('/api/orders', (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create order' });
+  }
+});
+
+// Add items to an existing order
+app.post('/api/orders/:id/add-items', async (req, res) => {
+  const { id } = req.params;
+  const { items, extraTotal } = req.body;
+  
+  if (!items || items.length === 0) {
+    return res.status(400).json({ error: 'No items to add' });
+  }
+
+  try {
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status === 'completed') {
+      return res.status(400).json({ error: 'Cannot add items to a completed order' });
+    }
+
+    // Process payment for the extra total using payment service
+    const paymentResult = await paymentService.createPayment(
+      `${id}-addon-${Date.now()}`,
+      extraTotal, 
+      { name: order.customer_name, phone: order.customer_phone }
+    );
+
+    const insertItem = db.prepare(`
+      INSERT INTO order_items (order_id, product_id, product_title, quantity, price_at_time, modifiers_json, is_addon) 
+      VALUES (?, ?, ?, ?, ?, ?, 1)
+    `);
+
+    const processAddonItems = db.transaction((orderItems) => {
+      for (const item of orderItems) {
+        insertItem.run(
+          id, 
+          item.id || null, 
+          item.title,
+          item.quantity || 1, 
+          item.totalPrice || item.price,
+          item.selectedOptions ? JSON.stringify(item.selectedOptions) : null
+        );
+      }
+      db.prepare('UPDATE orders SET total = total + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(extraTotal, id);
+    });
+
+    if (paymentResult.success) {
+      if (paymentResult.snapToken) {
+        processAddonItems(items);
+        return res.json({ 
+          success: true, 
+          orderId: id,
+          snapToken: paymentResult.snapToken,
+          clientKey: process.env.MIDTRANS_CLIENT_KEY,
+          redirectUrl: paymentResult.redirectUrl,
+          message: 'Addon snap token created'
+        });
+      }
+
+      processAddonItems(items);
+      res.json({ 
+        success: true, 
+        orderId: id,
+        message: 'Addon payment successful'
+      });
+    } else {
+      res.status(400).json({ error: paymentResult.message || 'Payment failed' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add items' });
   }
 });
 

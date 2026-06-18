@@ -1,11 +1,15 @@
 import { writable, derived } from "svelte/store";
 
+/** @type {import('svelte/store').Writable<any>} */
+export const addonOrder = writable(null);
+
 function createCart() {
+  /** @type {import('svelte/store').Writable<any[]>} */
   const { subscribe, update, set } = writable([]);
 
   return {
     subscribe,
-    add: (product) => update((items) => [...items, product]),
+    add: (/** @type {any} */ product) => update((items) => [...items, product]),
     reset: () => set([]),
   };
 }

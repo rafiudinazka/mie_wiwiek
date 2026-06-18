@@ -26,7 +26,7 @@
     class="image-area"
     style:background={image
       ? `url(${image}) center/cover no-repeat`
-      : "#2a2a2a"}
+      : "#e8e8e3"}
   >
     {#if !image}
       <span class="no-image">No Image</span>
@@ -56,16 +56,21 @@
 
 <style>
   .card {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-secondary);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     height: 100%;
     position: relative;
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
   }
 
   .card.pressed {
@@ -80,7 +85,8 @@
   }
 
   .no-image {
-    opacity: 0.3;
+    color: var(--color-text-muted);
+    opacity: 0.5;
   }
 
   .content {
@@ -91,13 +97,14 @@
   }
 
   h3 {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     margin-bottom: var(--spacing-xs);
+    color: var(--color-text-primary);
   }
 
   p {
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: var(--color-text-secondary);
     line-height: 1.4;
     margin-bottom: var(--spacing-md);
@@ -111,9 +118,9 @@
   }
 
   .price {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--color-accent);
   }
 
   .add-btn {
@@ -125,7 +132,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(255, 92, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(212, 50, 28, 0.3);
     transition: transform 0.1s ease;
   }
 </style>

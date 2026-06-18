@@ -4,10 +4,11 @@
 
   export let cartState = { count: 0, total: 0 };
   export let onCartClick = () => {};
+  export let onFindOrder = () => {};
 </script>
 
 <div class="layout">
-  <Header />
+  <Header {onFindOrder} />
   <main>
     <slot></slot>
   </main>
@@ -26,7 +27,7 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    background: radial-gradient(circle at top right, #2a2a2a 0%, #121212 40%);
+    background: var(--color-bg-primary);
   }
 
   main {
