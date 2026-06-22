@@ -299,12 +299,12 @@
   }
 
   .print-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-border);
     color: var(--color-text-primary);
   }
 
   .print-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-border-hover);
   }
 
   .complete-btn {
