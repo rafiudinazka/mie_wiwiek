@@ -72,6 +72,7 @@
 
       <div class="login-form">
         <div class="pin-input-wrapper">
+          <!-- svelte-ignore a11y_autofocus -->
           <input
             type="password"
             inputmode="numeric"
@@ -83,6 +84,7 @@
             on:keydown={handleKeydown}
             class:error
             disabled={isLoading}
+            autofocus
           />
           <div class="pin-dots">
             {#each [0, 1, 2, 3] as i}
