@@ -52,21 +52,21 @@
       key: "todayOrdersCount",
       label: "Order Hari Ini",
       icon: ShoppingBag,
-      color: "#22c55e",
+      color: "#27ae60",
       format: (/** @type {any} */ v) => v,
     },
     {
       key: "todayRevenue",
       label: "Revenue Hari Ini",
       icon: DollarSign,
-      color: "#f59e0b",
+      color: "#e67e22",
       format: (/** @type {any} */ v) => formatRupiah(v),
     },
     {
       key: "pendingOrders",
       label: "Pesanan Aktif",
       icon: TrendingUp,
-      color: "#ef4444",
+      color: "#c0392b",
       format: (/** @type {any} */ v) => v,
     },
   ];
@@ -89,7 +89,7 @@
         <div class="stat-card">
           <div
             class="stat-icon"
-            style="background: {card.color}20; color: {card.color}"
+            style="background: {card.color}15; color: {card.color}"
           >
             <svelte:component this={card.icon} size={24} />
           </div>
@@ -129,7 +129,7 @@
 
   .page-header h1 {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 8px;
   }
 
@@ -149,7 +149,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -177,10 +177,12 @@
     align-items: center;
     gap: 16px;
     transition: transform 0.2s;
+    border: 1px solid var(--color-border);
   }
 
   .stat-card:hover {
     transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .stat-icon {
@@ -199,7 +201,7 @@
 
   .stat-value {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
   }
 
   .stat-label {
@@ -211,10 +213,12 @@
     background: var(--color-bg-secondary);
     border-radius: 16px;
     padding: 24px;
+    border: 1px solid var(--color-border);
   }
 
   .quick-actions h2 {
     font-size: 1.1rem;
+    font-weight: 700;
     margin-bottom: 16px;
   }
 
@@ -230,8 +234,8 @@
     align-items: center;
     gap: 8px;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     color: var(--color-text-primary);
     text-decoration: none;
@@ -240,11 +244,12 @@
   }
 
   .action-card:hover {
-    background: rgba(255, 255, 255, 0.08);
     border-color: var(--color-accent);
+    background: var(--color-accent-subtle);
   }
 
   .action-card span {
     font-size: 0.9rem;
+    font-weight: 600;
   }
 </style>

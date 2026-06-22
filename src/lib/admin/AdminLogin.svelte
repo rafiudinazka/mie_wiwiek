@@ -64,9 +64,9 @@
     <div class="login-card">
       <div class="login-header">
         <div class="lock-icon">
-          <Lock size={32} />
+          <Lock size={28} />
         </div>
-        <h1>Admin Login</h1>
+        <h1>Admin Panel</h1>
         <p>Masukkan PIN untuk mengakses dashboard</p>
       </div>
 
@@ -127,12 +127,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-primary);
-    background-image: radial-gradient(
-      circle at top right,
-      #2a2a2a 0%,
-      #121212 50%
-    );
+    background: var(--color-bg-warm);
     padding: 24px;
   }
 
@@ -142,7 +137,8 @@
     background: var(--color-bg-secondary);
     border-radius: 24px;
     padding: 40px 32px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
   }
 
   .login-header {
@@ -153,7 +149,7 @@
   .lock-icon {
     width: 64px;
     height: 64px;
-    background: rgba(255, 92, 0, 0.15);
+    background: var(--color-accent-subtle);
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -164,7 +160,9 @@
 
   .login-header h1 {
     font-size: 1.75rem;
+    font-weight: 800;
     margin-bottom: 8px;
+    color: var(--color-text-primary);
   }
 
   .login-header p {
@@ -188,8 +186,8 @@
     font-size: 2rem;
     text-align: center;
     letter-spacing: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
+    border: 2px solid var(--color-border);
     border-radius: 16px;
     color: var(--color-text-primary);
     transition: all 0.2s;
@@ -204,7 +202,7 @@
   .pin-input-wrapper input:focus {
     outline: none;
     border-color: var(--color-accent);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-secondary);
   }
 
   .pin-input-wrapper input.error {
@@ -216,8 +214,8 @@
     justify-content: center;
     gap: 20px;
     padding: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
+    border: 2px solid var(--color-border);
     border-radius: 16px;
     pointer-events: none;
   }
@@ -226,7 +224,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--color-border-hover);
     transition: all 0.15s;
   }
 
@@ -251,7 +249,7 @@
     background: var(--color-accent);
     color: #fff;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: 12px;
     transition: all 0.2s;
   }
@@ -290,6 +288,7 @@
     font-size: 0.9rem;
     background: none;
     padding: 8px 16px;
+    font-weight: 600;
   }
 
   .back-btn:hover {

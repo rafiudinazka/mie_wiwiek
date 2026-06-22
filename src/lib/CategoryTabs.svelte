@@ -38,22 +38,22 @@
     background: var(--color-bg-secondary);
     color: var(--color-text-secondary);
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
     border: 1px solid var(--color-border);
     transition: all 0.2s ease;
     flex-shrink: 0;
-    box-shadow: var(--shadow-sm);
   }
 
   button:hover {
     border-color: var(--color-border-hover);
+    background: var(--color-bg-warm, #f3ece4);
   }
 
   button.active {
     background: var(--color-accent);
     color: #fff;
     border-color: var(--color-accent);
-    box-shadow: 0 2px 8px rgba(212, 50, 28, 0.25);
+    box-shadow: 0 3px 10px rgba(192, 57, 43, 0.2);
   }
 </style>

@@ -342,7 +342,7 @@
 
   .page-header h1 {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 4px;
   }
 
@@ -381,7 +381,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -408,11 +408,11 @@
   td {
     padding: 16px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   th {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-warm);
     font-weight: 600;
     font-size: 0.85rem;
     color: var(--color-text-secondary);
@@ -437,7 +437,7 @@
   .category-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
     border-radius: 6px;
     font-size: 0.8rem;
   }
@@ -484,7 +484,7 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(45, 32, 22, 0.4);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -507,7 +507,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .modal-header h2 {
@@ -547,8 +547,8 @@
   textarea {
     width: 100%;
     padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
+    border: 1px solid var(--color-border);
     border-radius: 10px;
     color: var(--color-text-primary);
     font-size: 0.95rem;
@@ -587,7 +587,7 @@
   }
 
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
     color: var(--color-text-primary);
   }
 

@@ -118,8 +118,8 @@
 
 <style>
   .order-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
     border-radius: 16px;
     padding: 16px;
     transition: all 0.2s;
@@ -127,11 +127,11 @@
 
   .order-card.has-addons {
     border-color: var(--color-accent);
-    box-shadow: 0 0 10px rgba(255, 92, 0, 0.2);
+    box-shadow: 0 0 12px rgba(192, 57, 43, 0.12);
   }
 
   .order-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--color-border-hover);
   }
 
   .card-header {
@@ -143,7 +143,7 @@
 
   .order-id {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--color-accent);
     display: flex;
     align-items: center;
@@ -183,14 +183,14 @@
   }
 
   .customer-name {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
     font-size: 1rem;
   }
 
   .divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-border);
     margin: 12px 0;
   }
 
@@ -222,15 +222,16 @@
 
   .item-name.is-addon {
     color: var(--color-accent);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .addon-tag {
     font-size: 0.65rem;
-    background: rgba(255, 92, 0, 0.2);
+    background: var(--color-accent-subtle);
     color: var(--color-accent);
     padding: 2px 4px;
     border-radius: 4px;
+    font-weight: 700;
   }
 
   .qty {
@@ -248,13 +249,13 @@
   .mod {
     font-size: 0.75rem;
     color: var(--color-text-muted);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
     padding: 2px 6px;
     border-radius: 4px;
   }
 
   .item-price {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
     white-space: nowrap;
   }
@@ -271,7 +272,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .total-amount {
@@ -294,13 +295,14 @@
     padding: 12px 16px;
     border-radius: 10px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     transition: all 0.2s;
   }
 
   .print-btn {
-    background: var(--color-border);
+    background: var(--color-bg-warm);
     color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
   }
 
   .print-btn:hover {

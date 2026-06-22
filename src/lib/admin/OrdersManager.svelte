@@ -284,7 +284,7 @@
 
   .page-header h1 {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 4px;
   }
 
@@ -327,7 +327,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -354,11 +354,11 @@
   td {
     padding: 14px 16px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   th {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-warm);
     font-weight: 600;
     font-size: 0.8rem;
     color: var(--color-text-secondary);
@@ -411,7 +411,7 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
     color: var(--color-text-secondary);
     display: flex;
     align-items: center;
@@ -419,7 +419,7 @@
   }
 
   .view-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-border);
     color: var(--color-text-primary);
   }
 
@@ -427,7 +427,7 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(45, 32, 22, 0.4);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -450,7 +450,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .modal-header h2 {
@@ -495,7 +495,7 @@
 
   .divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-border);
     margin: 20px 0;
   }
 
@@ -511,7 +511,7 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .item-info {
@@ -537,7 +537,7 @@
   .mod {
     font-size: 0.75rem;
     color: var(--color-text-muted);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
     padding: 2px 6px;
     border-radius: 4px;
   }

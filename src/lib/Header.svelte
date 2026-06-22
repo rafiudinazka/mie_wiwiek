@@ -27,12 +27,11 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-md) var(--spacing-xl);
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
+    background: var(--color-bg-secondary);
+    border-bottom: 2px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 1px solid var(--color-border);
   }
 
   .brand {
@@ -42,45 +41,44 @@
   }
 
   .logo-box {
-    background: linear-gradient(135deg, var(--color-accent), #e8a838);
-    padding: 8px;
-    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    padding: 10px;
+    border-radius: 12px;
     display: flex;
-    box-shadow: 0 2px 8px rgba(212, 50, 28, 0.25);
+    box-shadow: 0 3px 10px rgba(192, 57, 43, 0.2);
   }
 
   h1 {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.3rem;
+    font-weight: 800;
     line-height: 1;
     margin: 0;
     color: var(--color-text-primary);
+    letter-spacing: -0.3px;
   }
 
   .brand-text span {
     font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    font-weight: 500;
+    color: var(--color-text-muted);
+    font-weight: 600;
   }
 
   .action-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    background: var(--color-bg-secondary);
+    background: var(--color-bg-warm);
     border: 1px solid var(--color-border);
     padding: 8px 16px;
     border-radius: var(--radius-full);
     color: var(--color-text-primary);
     font-size: 0.875rem;
-    font-weight: 600;
-    box-shadow: var(--shadow-sm);
+    font-weight: 700;
     transition: all 0.2s;
   }
 
   .action-btn:hover {
-    border-color: var(--color-border-hover);
-    box-shadow: var(--shadow-md);
+    background: var(--color-border-hover);
   }
 
   @media (max-width: 600px) {

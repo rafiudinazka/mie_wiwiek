@@ -26,10 +26,10 @@
     class="image-area"
     style:background={image
       ? `url(${image}) center/cover no-repeat`
-      : "#e8e8e3"}
+      : "var(--color-bg-warm)"}
   >
     {#if !image}
-      <span class="no-image">No Image</span>
+      <span class="no-image">🍜</span>
     {/if}
   </div>
 
@@ -48,7 +48,7 @@
         on:mouseup|stopPropagation={(e) =>
           (e.currentTarget.style.transform = "scale(1)")}
       >
-        <Plus size={24} />
+        <Plus size={22} />
       </button>
     </div>
   </div>
@@ -64,17 +64,17 @@
     flex-direction: column;
     height: 100%;
     position: relative;
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.25s ease;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
   }
 
   .card:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
 
   .card.pressed {
-    transform: scale(0.98);
+    transform: scale(0.98) translateY(0);
   }
 
   .image-area {
@@ -85,8 +85,8 @@
   }
 
   .no-image {
-    color: var(--color-text-muted);
-    opacity: 0.5;
+    font-size: 3rem;
+    opacity: 0.4;
   }
 
   .content {
@@ -97,8 +97,8 @@
   }
 
   h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-primary);
   }
@@ -118,21 +118,21 @@
   }
 
   .price {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--color-accent);
   }
 
   .add-btn {
     background: var(--color-accent);
     color: #fff;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(212, 50, 28, 0.3);
+    box-shadow: 0 3px 10px rgba(192, 57, 43, 0.2);
     transition: transform 0.1s ease;
   }
 

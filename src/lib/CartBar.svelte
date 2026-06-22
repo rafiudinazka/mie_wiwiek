@@ -42,8 +42,8 @@
     padding: var(--spacing-lg);
     background: linear-gradient(
       to top,
-      rgba(245, 245, 240, 1) 0%,
-      rgba(245, 245, 240, 0) 100%
+      var(--color-bg-primary) 0%,
+      transparent 100%
     );
     pointer-events: none;
     display: flex;
@@ -55,8 +55,8 @@
     pointer-events: auto;
     width: 100%;
     max-width: 600px;
-    background: #ccc;
-    color: #999;
+    background: var(--color-bg-warm);
+    color: var(--color-text-muted);
     padding: 12px var(--spacing-lg);
     border-radius: var(--radius-full);
     display: flex;
@@ -71,7 +71,7 @@
   .cart-btn.visible {
     background: var(--color-accent);
     color: #fff;
-    box-shadow: 0 6px 24px rgba(212, 50, 28, 0.35);
+    box-shadow: 0 6px 24px rgba(192, 57, 43, 0.3);
     transform: translateY(0);
     opacity: 1;
   }

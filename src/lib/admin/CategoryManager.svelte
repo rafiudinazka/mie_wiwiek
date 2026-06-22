@@ -275,7 +275,7 @@
 
   .page-header h1 {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 4px;
   }
 
@@ -314,7 +314,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -340,10 +340,11 @@
     background: var(--color-bg-secondary);
     border-radius: 12px;
     transition: all 0.2s;
+    border: 1px solid var(--color-border);
   }
 
   .category-card:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-warm);
   }
 
   .category-info {
@@ -399,7 +400,7 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(45, 32, 22, 0.4);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -420,7 +421,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .modal-header h2 {
@@ -452,8 +453,8 @@
   input {
     width: 100%;
     padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
+    border: 1px solid var(--color-border);
     border-radius: 10px;
     color: var(--color-text-primary);
     font-size: 0.95rem;
@@ -493,7 +494,7 @@
   }
 
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
     color: var(--color-text-primary);
   }
 

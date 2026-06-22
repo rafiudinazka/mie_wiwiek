@@ -113,7 +113,7 @@
       <div style="margin-bottom: var(--spacing-lg);">
         <h2
           style:font-size="2rem"
-          style:font-weight="700"
+          style:font-weight="800"
           style:margin-bottom="var(--spacing-md)"
           style:display="flex"
           style:align-items="center"

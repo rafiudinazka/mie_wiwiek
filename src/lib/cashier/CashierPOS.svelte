@@ -230,7 +230,7 @@
     align-items: center;
     padding: 16px 24px;
     background: var(--color-bg-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid var(--color-border);
   }
 
   .header-left {
@@ -241,7 +241,7 @@
 
   .header-left h1 {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
     margin: 0;
   }
 
@@ -284,14 +284,16 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-warm);
     color: var(--color-text-primary);
     border-radius: 8px;
     font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
   }
 
   .logout-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-border-hover);
   }
 
   .cashier-main {
@@ -314,6 +316,7 @@
     background: var(--color-bg-secondary);
     border-radius: 16px;
     padding: 20px;
+    border: 1px solid var(--color-border);
   }
 
   .orders-section h2,
@@ -322,9 +325,10 @@
     align-items: center;
     gap: 8px;
     font-size: 1.1rem;
+    font-weight: 700;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .section-icon {
@@ -345,7 +349,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -398,13 +402,13 @@
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-warm);
     border-radius: 8px;
     font-size: 0.9rem;
   }
 
   .history-item .order-id {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-accent);
   }
 
@@ -414,7 +418,7 @@
   }
 
   .history-item .total {
-    font-weight: 600;
+    font-weight: 700;
   }
 
   /* Print container - hidden by default, shown only when printing */
