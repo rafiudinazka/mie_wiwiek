@@ -95,7 +95,8 @@
 <style>
   .admin-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     background: var(--color-bg-primary);
     color: var(--color-text-primary);
   }
@@ -218,7 +219,7 @@
     margin-left: 240px;
     padding: 24px;
     overflow-y: auto;
-    min-height: 100vh;
+    height: 100vh;
   }
 
   @media (max-width: 768px) {
