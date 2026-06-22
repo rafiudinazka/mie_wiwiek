@@ -22,7 +22,7 @@
 
   // --- Search by Order ID ---
   async function searchById() {
-    const q = orderIdQuery.trim();
+    const q = String(orderIdQuery).trim();
     if (!q) {
       errorMsg = "Masukkan nomor pesanan";
       return;
