@@ -9,12 +9,18 @@
     "build": "vite build",
     "preview": "vite preview",
     "start:backend": "cd backend && node index.js",
-    "start:frontend": "vite --port 5173 --host"
+    "start:frontend": "vite --port 5173 --host",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.7",
+    "jsdom": "^26.1.0",
     "svelte": "^5.43.8",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^3.2.3"
   },
   "dependencies": {
     "lucide-svelte": "^0.562.0"

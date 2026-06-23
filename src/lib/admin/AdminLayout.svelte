@@ -14,6 +14,9 @@
   import CategoryManager from "./CategoryManager.svelte";
   import OrdersManager from "./OrdersManager.svelte";
 
+  /** @type {() => void} */
+  export let onLogout = () => {};
+
   let currentPage = "dashboard";
   let sidebarOpen = false;
 
@@ -25,6 +28,7 @@
   ];
 
   function handleLogout() {
+    onLogout();
     window.location.hash = "/";
     window.location.reload();
   }

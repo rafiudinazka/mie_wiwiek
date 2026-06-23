@@ -1,16 +1,70 @@
 <script>
+  import { onMount } from "svelte";
   import { Lock, ArrowRight } from "lucide-svelte";
   import { fade } from "svelte/transition";
   import { apiFetch } from "../api.js";
+
+  const SESSION_KEY = "admin_session";
+  const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
   let pin = "";
   let error = "";
   let isLoading = false;
   let isLoggedIn = false;
+  let isCheckingSession = true;
 
   // Lazy load admin dashboard after login
   /** @type {any} */
   let AdminDashboard = null;
+
+  /**
+   * Simpan session ke sessionStorage dengan expiry
+   */
+  function saveSession() {
+    const session = {
+      loggedIn: true,
+      expiresAt: Date.now() + SESSION_DURATION_MS,
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  }
+
+  /**
+   * Cek apakah ada session yang valid (belum expired)
+   * @returns {boolean}
+   */
+  function hasValidSession() {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return false;
+      const session = JSON.parse(raw);
+      if (session.loggedIn && session.expiresAt > Date.now()) {
+        return true;
+      }
+      // Session expired, bersihkan
+      sessionStorage.removeItem(SESSION_KEY);
+      return false;
+    } catch {
+      sessionStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+  }
+
+  /**
+   * Hapus session (untuk logout)
+   */
+  export function clearSession() {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+
+  // Saat mount, cek session yang sudah ada
+  onMount(async () => {
+    if (hasValidSession()) {
+      isLoggedIn = true;
+      const module = await import("./AdminLayout.svelte");
+      AdminDashboard = module.default;
+    }
+    isCheckingSession = false;
+  });
 
   async function handleLogin() {
     if (pin.length !== 4) {
@@ -29,6 +83,7 @@
       });
 
       if (res.ok) {
+        saveSession();
         isLoggedIn = true;
         // Load admin dashboard
         const module = await import("./AdminLayout.svelte");
@@ -57,8 +112,15 @@
   }
 </script>
 
-{#if isLoggedIn && AdminDashboard}
-  <svelte:component this={AdminDashboard} />
+{#if isCheckingSession}
+  <div class="login-page">
+    <div class="login-card" style="text-align:center;">
+      <div class="spinner"></div>
+      <p style="color:var(--color-text-secondary);margin-top:16px;">Mengecek sesi...</p>
+    </div>
+  </div>
+{:else if isLoggedIn && AdminDashboard}
+  <svelte:component this={AdminDashboard} onLogout={clearSession} />
 {:else}
   <div class="login-page" transition:fade>
     <div class="login-card">

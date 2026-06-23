@@ -2,14 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./database');
-const { paymentService } = require('./payment');
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+/**
+ * Create Express app with injected dependencies.
+ * @param {object} db - better-sqlite3 database instance
+ * @param {object} paymentSvc - payment service instance
+ * @returns {import('express').Express}
+ */
+function createApp(db, paymentSvc) {
+  const app = express();
 
-app.use(cors());
-app.use(express.json());
+  app.use(cors());
+  app.use(express.json());
 
 // ============================================
 // PRODUCTS API
@@ -300,7 +304,7 @@ app.post('/api/orders/:id/add-items', async (req, res) => {
     }
 
     // Process payment for the extra total using payment service
-    const paymentResult = await paymentService.createPayment(
+    const paymentResult = await paymentSvc.createPayment(
       `${id}-addon-${Date.now()}`,
       extraTotal, 
       { name: order.customer_name, phone: order.customer_phone }
@@ -368,7 +372,7 @@ app.post('/api/orders/:id/pay', async (req, res) => {
     }
 
     // Process payment using payment service
-    const paymentResult = await paymentService.createPayment(
+    const paymentResult = await paymentSvc.createPayment(
       id, 
       order.total, 
       { name: order.customer_name, phone: order.customer_phone }
@@ -465,7 +469,7 @@ app.post('/api/orders/:id/confirm-payment', (req, res) => {
 // Payment webhook (for Midtrans notifications)
 app.post('/api/payment/webhook', async (req, res) => {
   try {
-    const result = await paymentService.handleWebhook(req.body);
+    const result = await paymentSvc.handleWebhook(req.body);
     console.log('📩 Webhook received:', result);
     
     if (result.status === 'success' && result.orderId) {
@@ -558,12 +562,25 @@ app.get('{*path}', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+  return app;
+}
+
 // ============================================
-// START SERVER
+// START SERVER (only when run directly)
 // ============================================
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📦 Payment Gateway: ${process.env.PAYMENT_GATEWAY || 'simulated'}`);
-  console.log(`🌐 Frontend served from: ${distPath}`);
-});
+if (require.main === module) {
+  const db = require('./database');
+  const { paymentService } = require('./payment');
+  const PORT = process.env.PORT || 3001;
+  const app = createApp(db, paymentService);
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📦 Payment Gateway: ${process.env.PAYMENT_GATEWAY || 'simulated'}`);
+    const distPath = path.join(__dirname, '..', 'dist');
+    console.log(`🌐 Frontend served from: ${distPath}`);
+  });
+}
+
+module.exports = { createApp };
