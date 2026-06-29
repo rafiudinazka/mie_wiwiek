@@ -176,7 +176,7 @@
 
       <div class="login-footer">
         <button class="back-btn" on:click={() => (window.location.hash = "/")}>
-          ← Kembali ke Kiosk
+          ← Kembali ke Halaman Utama
         </button>
       </div>
     </div>

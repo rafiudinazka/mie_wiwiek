@@ -70,7 +70,7 @@ class MidtransPayment extends PaymentService {
   async createPayment(orderId, amount, customer) {
     const parameter = {
       transaction_details: {
-        order_id: `KIOSK-${orderId}-${Date.now()}`,
+        order_id: `SPM-${orderId}-${Date.now()}`,
         gross_amount: Math.round(amount), // Midtrans requires integer IDR
       },
       customer_details: {
@@ -159,7 +159,7 @@ class MidtransPayment extends PaymentService {
         status = "pending";
       }
 
-      // Extract the actual order ID from "KIOSK-{id}-{timestamp}"
+      // Extract the actual order ID from "SPM-{id}-{timestamp}"
       const parts = orderId.split("-");
       const actualOrderId = parts.length >= 2 ? parseInt(parts[1]) : null;
 

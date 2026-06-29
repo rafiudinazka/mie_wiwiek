@@ -2,7 +2,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 // Support custom DB path via env var (useful for Railway volumes)
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'kiosk.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'pemesanan.db');
 const db = new Database(dbPath);
 
 // Initialize Schema

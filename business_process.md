@@ -1,4 +1,4 @@
-# Business Process — Kiosk App Mie Nusantara
+# Business Process — Sistem Pemesanan Mandiri Mie Nusantara
 
 > Dokumen ini berisi analisis business process berdasarkan codebase project **kiosk-app-svelte**. Semua diagram menggunakan format **Mermaid** agar bisa langsung di-copy-paste.
 
@@ -6,11 +6,11 @@
 
 ## 1. Gambaran Umum Sistem
 
-Aplikasi ini adalah **Self-Service Kiosk** untuk restoran mie (Karsa Nusantara). Terdapat **3 aktor utama**:
+Aplikasi ini adalah **Sistem Pemesanan Mandiri** untuk restoran mie (Karsa Nusantara). Terdapat **3 aktor utama**:
 
 | Aktor | Akses | Deskripsi |
 |-------|-------|-----------|
-| **Pelanggan** | Halaman utama (`/`) | Memesan makanan secara mandiri melalui layar kiosk |
+| **Pelanggan** | Halaman utama (`/`) | Memesan makanan secara mandiri melalui layar pemesanan mandiri |
 | **Kasir** | `/#/cashier` | Menerima pesanan masuk, cetak struk, dan menyelesaikan pesanan |
 | **Pemilik (Admin)** | `/#/admin` (PIN: 1234) | Mengelola produk, kategori, melihat riwayat order, dan dashboard |
 
@@ -28,7 +28,7 @@ Aplikasi ini adalah **Self-Service Kiosk** untuk restoran mie (Karsa Nusantara).
 
 ```mermaid
 graph TB
-    subgraph Sistem Kiosk Mie Nusantara
+    subgraph Sistem Pemesanan Mandiri Mie Nusantara
         UC1["Lihat Menu & Kategori"]
         UC2["Kustomisasi Produk"]
         UC3["Kelola Keranjang"]
@@ -73,7 +73,7 @@ graph TB
 
 ### 3.1 Deskripsi Proses
 
-1. Pelanggan melihat daftar menu yang ditampilkan di layar kiosk
+1. Pelanggan melihat daftar menu yang ditampilkan di layar pemesanan mandiri
 2. Pelanggan dapat memfilter menu berdasarkan kategori (Mie Kuah, Mie Goreng, Topping, Minuman, Cemilan)
 3. Pelanggan memilih produk — jika produk memiliki **modifier** (pilihan porsi, level pedas, tambahan, dll.), maka muncul popup kustomisasi
 4. Produk ditambahkan ke keranjang belanja
@@ -89,7 +89,7 @@ graph TB
 flowchart TD
     subgraph Pelanggan
         A1([Mulai])
-        A2[/Buka Layar Kiosk/]
+        A2[/Buka Layar Pemesanan/]
         A4[/Pilih Kategori Menu/]
         A6[/Pilih Produk/]
         A8[/Kustomisasi Produk:\nPorsi, Level Pedas,\nJenis Mie, Tambahan/]
@@ -417,7 +417,7 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     actor P as Pelanggan
-    participant K as Kiosk Frontend
+    participant K as Frontend Pemesanan
     participant B as Backend API
     participant DB as Database (SQLite)
     participant PG as Payment Gateway
@@ -425,7 +425,7 @@ sequenceDiagram
 
     Note over P,KS: === FASE 1: PEMESANAN ===
 
-    P->>K: Buka halaman kiosk
+    P->>K: Buka halaman pemesanan
     K->>B: GET /api/products
     B->>DB: SELECT * FROM products
     DB-->>B: Daftar produk

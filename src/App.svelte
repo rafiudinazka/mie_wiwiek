@@ -10,7 +10,7 @@
   import { apiFetch } from "./lib/api.js";
 
   // Routing
-  let currentRoute = "kiosk";
+  let currentRoute = "order";
 
   // Lazy load components
   /** @type {any} */
@@ -28,7 +28,7 @@
       currentRoute = "admin";
       import("./lib/admin/AdminLogin.svelte").then(m => AdminLogin = m.default);
     } else {
-      currentRoute = "kiosk";
+      currentRoute = "order";
     }
   }
 
@@ -38,7 +38,7 @@
     return () => window.removeEventListener("hashchange", handleHashChange);
   });
 
-  // Kiosk State
+  // Order Page State
   const CATEGORIES = [
     { id: "all", label: "Semua" },
     { id: "mie-kuah", label: "Mie Kuah" },
@@ -75,7 +75,7 @@
     }
   }
 
-  $: if (currentRoute === "kiosk") {
+  $: if (currentRoute === "order") {
     fetchProducts(activeCategory);
   }
 
@@ -103,7 +103,7 @@
   }
 </script>
 
-{#if currentRoute === "kiosk"}
+{#if currentRoute === "order"}
   <Layout
     cartState={{ count: $cartCount, total: $cartTotal }}
     onCartClick={() => (isCheckoutOpen = true)}

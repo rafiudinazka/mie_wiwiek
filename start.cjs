@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 Kiosk App - One-Click Starter
+ * 🚀 Sistem Pemesanan Mandiri - One-Click Starter
  * Menjalankan Backend (Express + SQLite) dan Frontend (Svelte + Vite) secara bersamaan
  */
 
@@ -144,7 +144,7 @@ ${colors.bright}${colors.green}╔═══════════════�
 ║                                                      ║
 ║   ✅  ALL SERVICES RUNNING!                          ║
 ║                                                      ║
-║   🖥️  Kiosk (Customer):  http://localhost:${FRONTEND_PORT}       ║
+║   🖥️  Pemesanan (Customer):  http://localhost:${FRONTEND_PORT}    ║
 ║   💰  Cashier:           http://localhost:${FRONTEND_PORT}/#cashier ║
 ║   ⚙️   Admin:             http://localhost:${FRONTEND_PORT}/#admin   ║
 ║   🔌  API Backend:       http://localhost:${BACKEND_PORT}        ║

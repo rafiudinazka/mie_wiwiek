@@ -1,7 +1,7 @@
 flowchart TD
     Start((●)) --> A["Midtrans Mengirim\nNotifikasi Webhook\n(POST /api/payment/webhook)"]
     A --> B["Sistem Memverifikasi\nPayload Notifikasi"]
-    B --> C["Mengekstrak Order ID\ndari Format KIOSK-id-timestamp"]
+    B --> C["Mengekstrak Order ID\ndari Format SPM-id-timestamp"]
     C --> D{"Status\nTransaksi?"}
     D -->|"capture (fraud=accept)\natau settlement"| E["Status = SUCCESS"]
     E --> F["Update Order:\nstatus = 'confirmed'\npayment_status = 'success'"]
