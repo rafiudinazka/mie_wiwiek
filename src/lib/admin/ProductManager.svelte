@@ -34,7 +34,7 @@
   async function fetchProducts() {
     loading = true;
     try {
-      const res = await apiFetch("/api/products");
+      const res = await apiFetch("/api/products?include_unavailable=true");
       if (res.ok) {
         products = await res.json();
       }
@@ -165,6 +165,23 @@
   function getCategoryLabel(/** @type {any} */ categoryId) {
     return categories.find((c) => c.id === categoryId)?.label || categoryId;
   }
+
+  async function toggleAvailability(/** @type {any} */ product) {
+    try {
+      const res = await apiFetch(
+        `/api/products/${product.id}/toggle-availability`,
+        { method: "POST" },
+      );
+      if (res.ok) {
+        const result = await res.json();
+        // Update local state instantly
+        product.is_available = result.is_available;
+        products = [...products];
+      }
+    } catch (err) {
+      alert("Gagal mengubah status produk");
+    }
+  }
 </script>
 
 <div class="page">
@@ -199,12 +216,13 @@
             <th>Nama</th>
             <th>Kategori</th>
             <th>Harga</th>
+            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           {#each products as product (product.id)}
-            <tr>
+            <tr class:unavailable={!product.is_available}>
               <td>
                 <div class="product-info">
                   <span class="product-title">{product.title}</span>
@@ -219,6 +237,21 @@
                 >
               </td>
               <td class="price">{formatRupiah(product.price)}</td>
+              <td>
+                <button
+                  class="toggle-btn"
+                  class:active={product.is_available}
+                  on:click={() => toggleAvailability(product)}
+                  title={product.is_available ? "Klik untuk tandai habis" : "Klik untuk tandai tersedia"}
+                >
+                  <span class="toggle-track">
+                    <span class="toggle-thumb"></span>
+                  </span>
+                  <span class="toggle-label">
+                    {product.is_available ? "Tersedia" : "Habis"}
+                  </span>
+                </button>
+              </td>
               <td>
                 <div class="actions">
                   <button
@@ -478,6 +511,74 @@
 
   .icon-btn.delete:hover {
     background: rgba(239, 68, 68, 0.2);
+  }
+
+  /* Toggle Switch */
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+  }
+
+  .toggle-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #ccc;
+    position: relative;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn.active .toggle-track {
+    background: var(--color-success, #22c55e);
+  }
+
+  .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .toggle-btn.active .toggle-thumb {
+    transform: translateX(18px);
+  }
+
+  .toggle-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .toggle-btn.active .toggle-label {
+    color: var(--color-success, #22c55e);
+  }
+
+  .toggle-btn:not(.active) .toggle-label {
+    color: var(--color-danger, #ef4444);
+  }
+
+  /* Unavailable row */
+  tr.unavailable {
+    opacity: 0.55;
+  }
+
+  tr.unavailable .product-title {
+    text-decoration: line-through;
+  }
+
+  tr.unavailable:hover {
+    opacity: 0.75;
   }
 
   /* Modal */

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { X, Check, CreditCard, User, Phone, QrCode } from "lucide-svelte";
+  import { X, Check, CreditCard, User, Phone, QrCode, CircleCheckBig } from "lucide-svelte";
   import { fade, fly } from "svelte/transition";
   import { formatRupiah } from "./utils.js";
   import { apiFetch } from "./api.js";
@@ -28,6 +28,7 @@
 
   // Payment config
   let paymentGateway = "simulated";
+  let selectedGateway = "direct"; // user's choice: "midtrans" | "direct"
   let snapLoaded = false;
 
   // Receipt
@@ -41,6 +42,8 @@
       if (res.ok) {
         const config = await res.json();
         paymentGateway = config.gateway;
+        // Default to midtrans if available, otherwise direct
+        selectedGateway = config.gateway === "midtrans" ? "midtrans" : "direct";
 
         if (config.gateway === "midtrans" && config.clientKey) {
           loadSnapJs(config.clientKey, config.isProduction);
@@ -143,7 +146,6 @@
 
     try {
       let orderId;
-      let payResult;
 
       if ($addonOrder) {
         orderId = $addonOrder.id;
@@ -156,7 +158,14 @@
           }),
         });
         if (!res.ok) throw new Error("Failed to add items to order");
-        payResult = await res.json();
+        const payResult = await res.json();
+
+        // Handle based on selected gateway
+        if (selectedGateway === "midtrans" && payResult.snapToken && (/** @type {any} */ (window)).snap) {
+          await handleMidtransPayment(orderId, payResult.snapToken);
+        } else {
+          handlePaymentSuccess(orderId, "Pembayaran Langsung");
+        }
       } else {
         // Step 1: Create order
         const orderRes = await apiFetch("/api/orders", {
@@ -174,26 +183,28 @@
         const orderDataResult = await orderRes.json();
         orderId = orderDataResult.orderId;
 
-        // Step 2: Process payment
-        const payRes = await apiFetch(
-          `/api/orders/${orderId}/pay`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        // Step 2: Route payment based on user's gateway choice
+        if (selectedGateway === "midtrans") {
+          const payRes = await apiFetch(
+            `/api/orders/${orderId}/pay`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            },
+          );
 
-        if (!payRes.ok) throw new Error("Payment failed");
-        payResult = await payRes.json();
-      }
+          if (!payRes.ok) throw new Error("Payment failed");
+          const payResult = await payRes.json();
 
-      // Step 3: Handle payment based on gateway
-      if (payResult.snapToken && (/** @type {any} */ (window)).snap) {
-        // Midtrans Snap payment popup
-        await handleMidtransPayment(orderId, payResult.snapToken);
-      } else {
-        // Simulated payment - direct success
-        handlePaymentSuccess(orderId, "Simulated");
+          if (payResult.snapToken && (/** @type {any} */ (window)).snap) {
+            await handleMidtransPayment(orderId, payResult.snapToken);
+          } else {
+            handlePaymentSuccess(orderId, "Midtrans");
+          }
+        } else {
+          // Direct payment — instant success
+          await handleDirectPayment(orderId);
+        }
       }
     } catch (err) {
       console.error("Checkout error:", err);
@@ -201,6 +212,20 @@
     } finally {
       isProcessing = false;
     }
+  }
+
+  /**
+   * Direct payment — bypass gateway, instant confirmation
+   * @param {any} orderId
+   */
+  async function handleDirectPayment(orderId) {
+    const res = await apiFetch(`/api/orders/${orderId}/pay-direct`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) throw new Error("Direct payment failed");
+    handlePaymentSuccess(orderId, "Pembayaran Langsung");
   }
 
   /**
@@ -398,29 +423,45 @@
               </p>
             </div>
 
-            <div class="payment-method">
-              {#if paymentGateway === "midtrans"}
-                <div class="method-card active midtrans">
-                  <QrCode size={24} />
-                  <div class="method-info">
-                    <span class="method-title">Midtrans Payment</span>
-                    <span class="method-desc"
-                      >QRIS, GoPay, OVO, Bank Transfer</span
-                    >
+            <div class="gateway-selector">
+              <p class="gateway-label">Pilih Metode Pembayaran:</p>
+              <div class="gateway-options">
+                {#if paymentGateway === "midtrans"}
+                  <button
+                    class="gateway-card"
+                    class:selected={selectedGateway === "midtrans"}
+                    on:click={() => (selectedGateway = "midtrans")}
+                    type="button"
+                  >
+                    <div class="gateway-radio" class:checked={selectedGateway === "midtrans"}></div>
+                    <QrCode size={22} />
+                    <div class="gateway-info">
+                      <span class="gateway-title">Midtrans Payment</span>
+                      <span class="gateway-desc">QRIS, GoPay, OVO, Bank Transfer</span>
+                    </div>
+                  </button>
+                {/if}
+                <button
+                  class="gateway-card direct"
+                  class:selected={selectedGateway === "direct"}
+                  on:click={() => (selectedGateway = "direct")}
+                  type="button"
+                >
+                  <div class="gateway-radio" class:checked={selectedGateway === "direct"}></div>
+                  <CircleCheckBig size={22} />
+                  <div class="gateway-info">
+                    <span class="gateway-title">Pembayaran Langsung</span>
+                    <span class="gateway-desc">Langsung berhasil (demo)</span>
                   </div>
-                </div>
-                <p class="method-note">
+                </button>
+              </div>
+              <p class="method-note">
+                {#if selectedGateway === "midtrans"}
                   Popup pembayaran Midtrans akan terbuka setelah klik bayar
-                </p>
-              {:else}
-                <div class="method-card active">
-                  <CreditCard size={24} />
-                  <span>Pembayaran Simulasi</span>
-                </div>
-                <p class="method-note">
-                  * Untuk demo, pembayaran akan langsung berhasil
-                </p>
-              {/if}
+                {:else}
+                  Pesanan akan langsung dikonfirmasi tanpa proses pembayaran
+                {/if}
+              </p>
             </div>
           </div>
 
@@ -625,29 +666,112 @@
     border-top: 1px solid var(--color-border);
   }
 
-  .payment-method { text-align: center; }
+  /* Gateway Selector */
+  .gateway-selector { margin-bottom: var(--spacing-md); }
 
-  .method-card {
-    display: inline-flex;
+  .gateway-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+  }
+
+  .gateway-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .gateway-card {
+    display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 24px;
+    padding: 14px 16px;
     background: var(--color-bg-primary);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
-    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--color-text-primary);
   }
 
-  .method-card.active {
+  .gateway-card:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-secondary);
+  }
+
+  .gateway-card.selected {
     border-color: var(--color-accent);
     background: var(--color-accent-subtle);
   }
 
-  .method-card.midtrans { flex-direction: row; text-align: left; }
-  .method-info { display: flex; flex-direction: column; gap: 2px; }
-  .method-title { font-weight: 600; font-size: 1rem; color: var(--color-text-primary); }
-  .method-desc { font-size: 0.8rem; color: var(--color-text-secondary); }
-  .method-note { font-size: 0.8rem; color: var(--color-text-muted); }
+  .gateway-card.direct.selected {
+    border-color: var(--color-success);
+    background: rgba(34, 197, 94, 0.08);
+  }
+
+  .gateway-card.direct:hover {
+    border-color: var(--color-success);
+  }
+
+  .gateway-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .gateway-radio.checked {
+    border-color: var(--color-accent);
+  }
+
+  .gateway-radio.checked::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+
+  .gateway-card.direct .gateway-radio.checked {
+    border-color: var(--color-success);
+  }
+
+  .gateway-card.direct .gateway-radio.checked::after {
+    background: var(--color-success);
+  }
+
+  .gateway-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .gateway-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+  }
+
+  .gateway-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+  }
+
+  .method-note {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
 
   /* Buttons */
   .button-group { display: flex; gap: 12px; }

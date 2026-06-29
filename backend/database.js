@@ -87,6 +87,14 @@ if (!itemColumnNames.includes('is_addon')) {
   db.exec('ALTER TABLE order_items ADD COLUMN is_addon BOOLEAN DEFAULT 0');
 }
 
+// Migration: Add is_available column to products if needed
+const productColumns = db.prepare("PRAGMA table_info(products)").all();
+const productColumnNames = productColumns.map(col => col.name);
+
+if (!productColumnNames.includes('is_available')) {
+  db.exec('ALTER TABLE products ADD COLUMN is_available INTEGER DEFAULT 1');
+}
+
 // Seed Data if empty
 const count = db.prepare('SELECT count(*) as count FROM categories').get();
 if (count.count === 0) {

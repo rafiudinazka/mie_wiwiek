@@ -25,13 +25,24 @@ app.get('/api/categories', (req, res) => {
 });
 
 app.get('/api/products', (req, res) => {
-  const { category_id } = req.query;
+  const { category_id, include_unavailable } = req.query;
   let query = 'SELECT * FROM products';
+  const conditions = [];
   const params = [];
 
   if (category_id && category_id !== 'all') {
-    query += ' WHERE category_id = ?';
+    conditions.push('category_id = ?');
     params.push(category_id);
+  }
+
+  // By default, only show available products (for customers)
+  // Admin passes ?include_unavailable=true to see all
+  if (include_unavailable !== 'true') {
+    conditions.push('is_available = 1');
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
 
   const products = db.prepare(query).all(...params);
@@ -74,6 +85,28 @@ app.delete('/api/products/:id', (req, res) => {
   try {
     stmt.run(id);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Toggle product availability (available/sold out)
+app.post('/api/products/:id/toggle-availability', (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = db.prepare('SELECT id, is_available FROM products WHERE id = ?').get(id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const newStatus = product.is_available ? 0 : 1;
+    db.prepare('UPDATE products SET is_available = ? WHERE id = ?').run(newStatus, id);
+
+    res.json({ 
+      success: true, 
+      is_available: newStatus,
+      message: newStatus ? 'Produk ditandai tersedia' : 'Produk ditandai habis'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -424,7 +457,45 @@ app.post('/api/orders/:id/pay', async (req, res) => {
   }
 });
 
-// Mark order as completed (customer picked up)
+// Direct payment (bypass gateway, instant success for demo)
+app.post('/api/orders/:id/pay-direct', (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status !== 'pending') {
+      return res.status(400).json({ error: 'Order already processed' });
+    }
+
+    const transactionId = `DIRECT-${id}-${Date.now()}`;
+
+    db.prepare(`
+      UPDATE orders 
+      SET status = 'confirmed', 
+          payment_status = 'success',
+          payment_method = 'direct',
+          payment_transaction_id = ?
+      WHERE id = ?
+    `).run(transactionId, id);
+
+    console.log(`✅ Order #${id} confirmed via direct payment`);
+
+    res.json({
+      success: true,
+      orderId: id,
+      transactionId,
+      message: 'Direct payment successful, order confirmed'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Direct payment failed' });
+  }
+});
+
 app.put('/api/orders/:id/complete', (req, res) => {
   const { id } = req.params;
   
