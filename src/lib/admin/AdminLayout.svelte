@@ -10,6 +10,7 @@
     Menu,
     X,
   } from "lucide-svelte";
+  import { navigate } from "../navigate.js";
 
   import AdminDashboard from "./AdminDashboard.svelte";
   import ProductManager from "./ProductManager.svelte";
