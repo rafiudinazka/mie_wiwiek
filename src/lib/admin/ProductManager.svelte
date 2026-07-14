@@ -144,6 +144,48 @@
     }
   }
 
+  async function handleImageUpload(/** @type {Event} */ event) {
+    const input = /** @type {HTMLInputElement} */ (event.target);
+    if (!input.files || input.files.length === 0) return;
+    
+    const file = input.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        const maxSize = 500;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height *= maxSize / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width *= maxSize / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        const webpDataUrl = canvas.toDataURL("image/webp", 0.8);
+        formData.image = webpDataUrl;
+      };
+      // @ts-ignore
+      img.src = e.target?.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function handleDelete(/** @type {any} */ product) {
     if (!confirm(`Hapus produk "${product.title}"?`)) return;
 
@@ -332,13 +374,21 @@
         </div>
 
         <div class="form-group">
-          <label for="image">URL Gambar</label>
+          <label for="image">Gambar Produk</label>
           <input
-            type="text"
+            type="file"
             id="image"
-            bind:value={formData.image}
-            placeholder="https://..."
+            accept="image/*"
+            on:change={handleImageUpload}
           />
+          {#if formData.image}
+            <div class="image-preview">
+              <img src={formData.image} alt="Preview" />
+              <button type="button" class="remove-img-btn" on:click={() => (formData.image = "")}>
+                <X size={14} /> Hapus Gambar
+              </button>
+            </div>
+          {/if}
         </div>
 
         {#if formError}
@@ -711,5 +761,37 @@
       padding: 12px;
       font-size: 0.9rem;
     }
+  }
+
+  .image-preview {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    background: var(--color-bg-primary);
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px dashed var(--color-border);
+  }
+
+  .image-preview img {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .remove-img-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .remove-img-btn:hover {
+    text-decoration: underline;
   }
 </style>
