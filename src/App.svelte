@@ -19,13 +19,13 @@
   /** @type {any} */
   let AdminLogin = null;
 
-  function handleHashChange() {
-    const hash = window.location.hash.slice(1) || "/";
+  function handlePathChange() {
+    const path = window.location.pathname;
     
-    if (hash === "/cashier" || hash === "cashier") {
+    if (path === "/cashier" || path === "/kasir") {
       currentRoute = "cashier";
       import("./lib/cashier/CashierLogin.svelte").then(m => CashierLogin = m.default);
-    } else if (hash === "/admin" || hash === "admin") {
+    } else if (path === "/admin") {
       currentRoute = "admin";
       import("./lib/admin/AdminLogin.svelte").then(m => AdminLogin = m.default);
     } else {
@@ -34,9 +34,9 @@
   }
 
   onMount(() => {
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    handlePathChange();
+    window.addEventListener("popstate", handlePathChange);
+    return () => window.removeEventListener("popstate", handlePathChange);
   });
 
   // Order Page State

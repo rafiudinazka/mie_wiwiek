@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { navigate } from "../navigate.js";
   import {
     Package,
     FolderOpen,
@@ -104,7 +105,7 @@
     <div class="quick-actions">
       <h2>Aksi Cepat</h2>
       <div class="actions-grid">
-        <a href="#/cashier" class="action-card">
+        <a href="/cashier" class="action-card" on:click|preventDefault={() => navigate('/cashier')}>
           <ShoppingBag size={24} />
           <span>Buka Kasir</span>
         </a>

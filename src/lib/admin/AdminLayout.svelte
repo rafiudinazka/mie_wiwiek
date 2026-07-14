@@ -35,7 +35,7 @@
 
   function handleLogout() {
     onLogout();
-    window.location.hash = "/";
+    navigate("/");
     window.location.reload();
   }
 

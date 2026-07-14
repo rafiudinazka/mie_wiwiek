@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { navigate } from "../navigate.js";
   import { Lock, ArrowRight, ShieldQuestion, ArrowLeft, Check } from "lucide-svelte";
   import { fade } from "svelte/transition";
   import { apiFetch } from "../api.js";
@@ -363,7 +364,7 @@
       {/if}
 
       <div class="login-footer">
-        <button class="back-btn" on:click={() => (window.location.hash = "/")}>
+        <button class="back-btn" on:click={() => navigate("/")}>
           ← Kembali ke Halaman Utama
         </button>
       </div>
