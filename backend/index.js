@@ -573,7 +573,7 @@ app.get('/api/payment/client-key', (req, res) => {
   res.json({ 
     clientKey: process.env.MIDTRANS_CLIENT_KEY || null,
     gateway: process.env.PAYMENT_GATEWAY || 'simulated',
-    isProduction: process.env.NODE_ENV === 'production'
+    isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true'
   });
 });
 

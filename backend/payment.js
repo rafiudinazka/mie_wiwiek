@@ -193,7 +193,7 @@ const paymentService = getPaymentService(
   {
     serverKey: process.env.MIDTRANS_SERVER_KEY,
     clientKey: process.env.MIDTRANS_CLIENT_KEY,
-    isProduction: process.env.NODE_ENV === "production",
+    isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
   },
 );
 
