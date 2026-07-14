@@ -23,6 +23,7 @@
     "vitest": "^3.2.3"
   },
   "dependencies": {
-    "lucide-svelte": "^0.562.0"
+    "lucide-svelte": "^0.562.0",
+    "pg": "^8.22.0"
   }
 }
