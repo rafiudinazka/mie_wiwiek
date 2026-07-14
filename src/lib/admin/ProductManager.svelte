@@ -434,7 +434,7 @@
         <!-- Modifier Editor -->
         <div class="form-group">
           <div class="modifier-header">
-            <label>Modifier / Opsi Tambahan</label>
+            <span style="font-size: 0.9rem; font-weight: 500; color: var(--color-text-secondary);">Modifier / Opsi Tambahan</span>
             <button type="button" class="modifier-add-btn" on:click={addModifierGroup}>
               <Plus size={14} /> Tambah Grup
             </button>
