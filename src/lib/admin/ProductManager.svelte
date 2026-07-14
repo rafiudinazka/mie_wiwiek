@@ -14,6 +14,11 @@
   /** @type {any} */
   let editingProduct = null;
 
+  /**
+   * @typedef {{ label: string, price: number }} ModifierOption
+   * @typedef {{ id: string, name: string, required: boolean, options: ModifierOption[] }} ModifierGroup
+   */
+
   // Form data
   let formData = {
     title: "",
@@ -21,6 +26,7 @@
     category_id: "",
     description: "",
     image: "",
+    /** @type {ModifierGroup[]} */
     modifiers: [],
   };
 
@@ -64,6 +70,7 @@
       category_id: categories[0]?.id || "",
       description: "",
       image: "",
+      /** @type {ModifierGroup[]} */
       modifiers: [],
     };
     formError = "";
@@ -254,7 +261,7 @@
   }
 
   function removeModifierOption(/** @type {number} */ groupIndex, /** @type {number} */ optionIndex) {
-    formData.modifiers[groupIndex].options = formData.modifiers[groupIndex].options.filter((_, i) => i !== optionIndex);
+    formData.modifiers[groupIndex].options = formData.modifiers[groupIndex].options.filter((/** @type {any} */ _, /** @type {number} */ i) => i !== optionIndex);
     formData.modifiers = [...formData.modifiers];
   }
 </script>
