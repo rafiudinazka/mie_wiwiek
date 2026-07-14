@@ -4,6 +4,8 @@
     Package,
     FolderOpen,
     ShoppingBag,
+    Users,
+    Settings,
     LogOut,
     Menu,
     X,
@@ -13,6 +15,8 @@
   import ProductManager from "./ProductManager.svelte";
   import CategoryManager from "./CategoryManager.svelte";
   import OrdersManager from "./OrdersManager.svelte";
+  import CashierManager from "./CashierManager.svelte";
+  import AdminSettings from "./AdminSettings.svelte";
 
   /** @type {() => void} */
   export let onLogout = () => {};
@@ -25,6 +29,8 @@
     { id: "products", label: "Produk", icon: Package },
     { id: "categories", label: "Kategori", icon: FolderOpen },
     { id: "orders", label: "Riwayat Order", icon: ShoppingBag },
+    { id: "cashiers", label: "Kasir", icon: Users },
+    { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
   function handleLogout() {
@@ -92,6 +98,10 @@
       <CategoryManager />
     {:else if currentPage === "orders"}
       <OrdersManager />
+    {:else if currentPage === "cashiers"}
+      <CashierManager />
+    {:else if currentPage === "settings"}
+      <AdminSettings />
     {/if}
   </main>
 </div>

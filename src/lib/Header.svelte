@@ -1,7 +1,8 @@
 <script>
-  import { Soup, Search } from 'lucide-svelte';
+  import { Soup, Search, ClipboardList } from 'lucide-svelte';
   
   export let onFindOrder = () => {};
+  export let onCheckStatus = () => {};
 </script>
 
 <header>
@@ -15,10 +16,16 @@
     </div>
   </div>
 
-  <button class="action-btn" on:click={onFindOrder}>
-    <Search size={18} />
-    <span class="hide-mobile">Edit Pesanan</span>
-  </button>
+  <div class="header-actions">
+    <button class="action-btn status-btn" on:click={onCheckStatus}>
+      <ClipboardList size={18} />
+      <span class="hide-mobile">Lihat Status</span>
+    </button>
+    <button class="action-btn" on:click={onFindOrder}>
+      <Search size={18} />
+      <span class="hide-mobile">Edit Pesanan</span>
+    </button>
+  </div>
 </header>
 
 <style>
@@ -63,6 +70,12 @@
     font-weight: 600;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .action-btn {
     display: flex;
     align-items: center;
@@ -81,7 +94,19 @@
     background: var(--color-border-hover);
   }
 
+  .action-btn.status-btn {
+    background: var(--color-accent-subtle);
+    border-color: rgba(192, 57, 43, 0.15);
+    color: var(--color-accent);
+  }
+
+  .action-btn.status-btn:hover {
+    background: rgba(192, 57, 43, 0.12);
+  }
+
   @media (max-width: 600px) {
     .hide-mobile { display: none; }
+    .action-btn { padding: 8px 12px; }
   }
 </style>
+

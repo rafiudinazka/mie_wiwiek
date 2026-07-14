@@ -14,6 +14,9 @@
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
+  export let cashierName = "Kasir";
+  export let onLogout = () => {};
+
   /** @type {any[]} */
   let orders = [];
   /** @type {any[]} */
@@ -119,7 +122,7 @@
   }
 
   function handleLogout() {
-    window.location.hash = "/";
+    onLogout();
   }
 </script>
 
@@ -127,7 +130,7 @@
   <header class="cashier-header">
     <div class="header-left">
       <Bell size={24} />
-      <h1>KASIR</h1>
+      <h1>KASIR — {cashierName}</h1>
       {#if orders.length > 0}
         <span class="order-badge">{orders.length}</span>
       {/if}

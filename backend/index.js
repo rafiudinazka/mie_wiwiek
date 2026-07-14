@@ -583,11 +583,16 @@ app.get('/api/payment/client-key', (req, res) => {
 
 app.post('/api/admin/login', (req, res) => {
   const { pin } = req.body;
-  // Simple hardcoded PIN for now (1234)
-  if (pin === '1234') {
-    res.json({ success: true, token: 'admin-token-123' });
-  } else {
-    res.status(401).json({ error: 'Invalid PIN' });
+  try {
+    const setting = db.prepare("SELECT value FROM admin_settings WHERE key = 'admin_pin'").get();
+    const adminPin = setting ? setting.value : '1234';
+    if (pin === adminPin) {
+      res.json({ success: true, token: 'admin-token-123' });
+    } else {
+      res.status(401).json({ error: 'Invalid PIN' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -615,6 +620,222 @@ app.get('/api/admin/stats', (req, res) => {
       todayRevenue: todayOrders.revenue,
       pendingOrders
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================
+// ADMIN SETTINGS API (PIN, Security Question)
+// ============================================
+
+// Check if security question is set up
+app.get('/api/admin/security-question', (req, res) => {
+  try {
+    const row = db.prepare("SELECT value FROM admin_settings WHERE key = 'security_question'").get();
+    const question = row ? row.value : '';
+    res.json({ question, isSetup: !!question });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Setup or update security question
+app.post('/api/admin/setup-security', (req, res) => {
+  const { question, answer, pin } = req.body;
+
+  if (!question || !answer) {
+    return res.status(400).json({ error: 'Pertanyaan dan jawaban wajib diisi' });
+  }
+
+  // Verify current PIN first
+  try {
+    const setting = db.prepare("SELECT value FROM admin_settings WHERE key = 'admin_pin'").get();
+    const adminPin = setting ? setting.value : '1234';
+    if (pin !== adminPin) {
+      return res.status(401).json({ error: 'PIN salah' });
+    }
+
+    const upsert = db.prepare('INSERT OR REPLACE INTO admin_settings (key, value) VALUES (?, ?)');
+    upsert.run('security_question', question);
+    upsert.run('security_answer', answer.toLowerCase().trim());
+
+    res.json({ success: true, message: 'Pertanyaan keamanan berhasil disimpan' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Forgot PIN — verify security answer
+app.post('/api/admin/forgot-pin', (req, res) => {
+  const { answer, newPin } = req.body;
+
+  if (!answer || !newPin) {
+    return res.status(400).json({ error: 'Jawaban dan PIN baru wajib diisi' });
+  }
+
+  if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    return res.status(400).json({ error: 'PIN harus 4 digit angka' });
+  }
+
+  try {
+    const questionRow = db.prepare("SELECT value FROM admin_settings WHERE key = 'security_question'").get();
+    if (!questionRow || !questionRow.value) {
+      return res.status(400).json({ error: 'Pertanyaan keamanan belum diatur. Hubungi pengembang untuk reset PIN.' });
+    }
+
+    const answerRow = db.prepare("SELECT value FROM admin_settings WHERE key = 'security_answer'").get();
+    const storedAnswer = answerRow ? answerRow.value : '';
+
+    if (answer.toLowerCase().trim() !== storedAnswer) {
+      return res.status(401).json({ error: 'Jawaban keamanan salah' });
+    }
+
+    // Reset PIN
+    db.prepare("INSERT OR REPLACE INTO admin_settings (key, value) VALUES ('admin_pin', ?)").run(newPin);
+    res.json({ success: true, message: 'PIN berhasil direset' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update admin PIN
+app.put('/api/admin/change-pin', (req, res) => {
+  const { currentPin, newPin } = req.body;
+
+  if (!currentPin || !newPin) {
+    return res.status(400).json({ error: 'PIN lama dan baru wajib diisi' });
+  }
+
+  if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    return res.status(400).json({ error: 'PIN harus 4 digit angka' });
+  }
+
+  try {
+    const setting = db.prepare("SELECT value FROM admin_settings WHERE key = 'admin_pin'").get();
+    const adminPin = setting ? setting.value : '1234';
+
+    if (currentPin !== adminPin) {
+      return res.status(401).json({ error: 'PIN lama salah' });
+    }
+
+    db.prepare("INSERT OR REPLACE INTO admin_settings (key, value) VALUES ('admin_pin', ?)").run(newPin);
+    res.json({ success: true, message: 'PIN berhasil diubah' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================
+// CASHIER ACCOUNTS API
+// ============================================
+
+// Cashier login
+app.post('/api/cashier/login', (req, res) => {
+  const { username, pin } = req.body;
+
+  if (!username || !pin) {
+    return res.status(400).json({ error: 'Username dan PIN wajib diisi' });
+  }
+
+  try {
+    const cashier = db.prepare('SELECT * FROM cashiers WHERE username = ? AND is_active = 1').get(username);
+    if (!cashier) {
+      return res.status(401).json({ error: 'Username tidak ditemukan atau akun tidak aktif' });
+    }
+
+    if (cashier.pin !== pin) {
+      return res.status(401).json({ error: 'PIN salah' });
+    }
+
+    res.json({ 
+      success: true, 
+      cashier: { id: cashier.id, name: cashier.name, username: cashier.username }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// List all cashiers (admin only)
+app.get('/api/admin/cashiers', (req, res) => {
+  try {
+    const cashiers = db.prepare('SELECT id, name, username, is_active, created_at FROM cashiers ORDER BY created_at DESC').all();
+    res.json(cashiers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create cashier
+app.post('/api/admin/cashiers', (req, res) => {
+  const { name, username, pin } = req.body;
+
+  if (!name || !username || !pin) {
+    return res.status(400).json({ error: 'Nama, username, dan PIN wajib diisi' });
+  }
+
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    return res.status(400).json({ error: 'PIN harus 4 digit angka' });
+  }
+
+  try {
+    // Check if username exists
+    const existing = db.prepare('SELECT id FROM cashiers WHERE username = ?').get(username);
+    if (existing) {
+      return res.status(400).json({ error: 'Username sudah digunakan' });
+    }
+
+    const info = db.prepare('INSERT INTO cashiers (name, username, pin) VALUES (?, ?, ?)').run(name, username, pin);
+    res.json({ success: true, id: info.lastInsertRowid });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update cashier
+app.put('/api/admin/cashiers/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, username, pin, is_active } = req.body;
+
+  try {
+    const cashier = db.prepare('SELECT * FROM cashiers WHERE id = ?').get(id);
+    if (!cashier) {
+      return res.status(404).json({ error: 'Kasir tidak ditemukan' });
+    }
+
+    // Check username uniqueness if changed
+    if (username && username !== cashier.username) {
+      const existing = db.prepare('SELECT id FROM cashiers WHERE username = ? AND id != ?').get(username, id);
+      if (existing) {
+        return res.status(400).json({ error: 'Username sudah digunakan' });
+      }
+    }
+
+    const updatedName = name || cashier.name;
+    const updatedUsername = username || cashier.username;
+    const updatedPin = pin || cashier.pin;
+    const updatedActive = is_active !== undefined ? is_active : cashier.is_active;
+
+    db.prepare('UPDATE cashiers SET name = ?, username = ?, pin = ?, is_active = ? WHERE id = ?')
+      .run(updatedName, updatedUsername, updatedPin, updatedActive, id);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete cashier
+app.delete('/api/admin/cashiers/:id', (req, res) => {
+  const { id } = req.params;
+  try {
+    const cashier = db.prepare('SELECT id FROM cashiers WHERE id = ?').get(id);
+    if (!cashier) {
+      return res.status(404).json({ error: 'Kasir tidak ditemukan' });
+    }
+    db.prepare('DELETE FROM cashiers WHERE id = ?').run(id);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -48,6 +48,20 @@ db.exec(`
     is_addon BOOLEAN DEFAULT 0,
     FOREIGN KEY (order_id) REFERENCES orders(id)
   );
+
+  CREATE TABLE IF NOT EXISTS cashiers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
+    pin TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS admin_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
 // Migration: Add new columns if they don't exist
@@ -343,6 +357,25 @@ if (count.count === 0) {
   ));
   
   console.log('Database seeded successfully.');
+}
+
+// Seed default admin settings if empty
+const adminCount = db.prepare('SELECT count(*) as count FROM admin_settings').get();
+if (adminCount.count === 0) {
+  console.log('Seeding admin settings...');
+  const insertSetting = db.prepare('INSERT OR IGNORE INTO admin_settings (key, value) VALUES (?, ?)');
+  insertSetting.run('admin_pin', '1234');
+  insertSetting.run('security_question', '');
+  insertSetting.run('security_answer', '');
+  console.log('Admin settings seeded (default PIN: 1234).');
+}
+
+// Seed default cashier if empty
+const cashierCount = db.prepare('SELECT count(*) as count FROM cashiers').get();
+if (cashierCount.count === 0) {
+  console.log('Seeding default cashier account...');
+  db.prepare('INSERT INTO cashiers (name, username, pin, is_active) VALUES (?, ?, ?, ?)').run('Kasir 1', 'kasir1', '0000', 1);
+  console.log('Default cashier seeded (username: kasir1, PIN: 0000).');
 }
 
 module.exports = db;

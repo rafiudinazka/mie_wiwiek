@@ -6,6 +6,7 @@
   import CheckoutModal from "./lib/CheckoutModal.svelte";
   import ProductCustomizer from "./lib/ProductCustomizer.svelte";
   import FindOrderModal from "./lib/FindOrderModal.svelte";
+  import OrderStatusModal from "./lib/OrderStatusModal.svelte";
   import { cart, cartCount, cartTotal, addonOrder } from "./lib/cart.js";
   import { apiFetch } from "./lib/api.js";
 
@@ -14,7 +15,7 @@
 
   // Lazy load components
   /** @type {any} */
-  let CashierPOS = null;
+  let CashierLogin = null;
   /** @type {any} */
   let AdminLogin = null;
 
@@ -23,7 +24,7 @@
     
     if (hash === "/cashier" || hash === "cashier") {
       currentRoute = "cashier";
-      import("./lib/cashier/CashierPOS.svelte").then(m => CashierPOS = m.default);
+      import("./lib/cashier/CashierLogin.svelte").then(m => CashierLogin = m.default);
     } else if (hash === "/admin" || hash === "admin") {
       currentRoute = "admin";
       import("./lib/admin/AdminLogin.svelte").then(m => AdminLogin = m.default);
@@ -55,6 +56,7 @@
   let isCheckoutOpen = false;
   let isCustomizerOpen = false;
   let isFindOrderOpen = false;
+  let isStatusOpen = false;
   /** @type {any} */
   let selectedProductForCustomization = null;
 
@@ -108,6 +110,7 @@
     cartState={{ count: $cartCount, total: $cartTotal }}
     onCartClick={() => (isCheckoutOpen = true)}
     onFindOrder={() => (isFindOrderOpen = true)}
+    onCheckStatus={() => (isStatusOpen = true)}
   >
     <section>
       <div style="margin-bottom: var(--spacing-lg);">
@@ -152,11 +155,16 @@
         isOpen={isFindOrderOpen}
         onClose={() => (isFindOrderOpen = false)}
       />
+
+      <OrderStatusModal
+        isOpen={isStatusOpen}
+        onClose={() => (isStatusOpen = false)}
+      />
     </section>
   </Layout>
 {:else if currentRoute === "cashier"}
-  {#if CashierPOS}
-    <svelte:component this={CashierPOS} />
+  {#if CashierLogin}
+    <svelte:component this={CashierLogin} />
   {:else}
     <div class="loading-screen">
       <div class="spinner"></div>

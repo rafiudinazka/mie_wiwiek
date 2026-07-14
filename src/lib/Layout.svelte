@@ -5,10 +5,11 @@
   export let cartState = { count: 0, total: 0 };
   export let onCartClick = () => {};
   export let onFindOrder = () => {};
+  export let onCheckStatus = () => {};
 </script>
 
 <div class="layout">
-  <Header {onFindOrder} />
+  <Header {onFindOrder} {onCheckStatus} />
   <main>
     <slot></slot>
   </main>
