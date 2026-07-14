@@ -1,19 +1,19 @@
 const request = require('supertest');
-const { createTestDb } = require('./setup');
+const { createTestPool } = require('./setup');
 const { SimulatedPayment } = require('../payment');
 const { createApp } = require('../index');
 
-let db;
+let pool;
 let app;
 
 beforeEach(() => {
-  db = createTestDb();
+  pool = createTestPool();
   const paymentSvc = new SimulatedPayment();
-  app = createApp(db, paymentSvc);
+  app = createApp(pool, paymentSvc);
 });
 
 afterEach(() => {
-  db.close();
+  pool.end();
 });
 
 // ============================================
@@ -263,7 +263,6 @@ describe('GET /api/orders/:id', () => {
 
 describe('GET /api/orders', () => {
   beforeEach(async () => {
-    // Create two orders
     await request(app)
       .post('/api/orders')
       .send({
@@ -452,7 +451,6 @@ describe('POST /api/orders/:id/confirm-payment', () => {
 
 describe('GET /api/orders/confirmed', () => {
   it('returns confirmed orders with items', async () => {
-    // Create and pay for an order
     const createRes = await request(app)
       .post('/api/orders')
       .send({
@@ -589,6 +587,38 @@ describe('GET /api/admin/stats', () => {
     expect(typeof res.body.todayOrdersCount).toBe('number');
     expect(typeof res.body.todayRevenue).toBe('number');
     expect(typeof res.body.pendingOrders).toBe('number');
+  });
+});
+
+// ============================================
+// CASHIER API
+// ============================================
+
+describe('POST /api/cashier/login', () => {
+  it('returns success for valid cashier credentials', async () => {
+    const res = await request(app)
+      .post('/api/cashier/login')
+      .send({ username: 'kasir1', pin: '0000' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.cashier.name).toBe('Kasir Test');
+  });
+
+  it('returns 401 for wrong PIN', async () => {
+    const res = await request(app)
+      .post('/api/cashier/login')
+      .send({ username: 'kasir1', pin: '9999' });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 400 when missing credentials', async () => {
+    const res = await request(app)
+      .post('/api/cashier/login')
+      .send({});
+
+    expect(res.status).toBe(400);
   });
 });
 

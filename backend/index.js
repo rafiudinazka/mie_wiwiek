@@ -881,3 +881,4 @@ if (require.main === module) {
 
 // Export for Vercel serverless functions
 module.exports = app;
+module.exports.createApp = createApp;

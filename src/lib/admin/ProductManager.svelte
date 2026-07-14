@@ -224,6 +224,39 @@
       alert("Gagal mengubah status produk");
     }
   }
+
+  // ============================================
+  // MODIFIER EDITOR FUNCTIONS
+  // ============================================
+
+  function addModifierGroup() {
+    formData.modifiers = [
+      ...formData.modifiers,
+      {
+        id: `mod-${Date.now()}`,
+        name: "",
+        required: false,
+        options: [{ label: "", price: 0 }],
+      },
+    ];
+  }
+
+  function removeModifierGroup(/** @type {number} */ index) {
+    formData.modifiers = formData.modifiers.filter((_, i) => i !== index);
+  }
+
+  function addModifierOption(/** @type {number} */ groupIndex) {
+    formData.modifiers[groupIndex].options = [
+      ...formData.modifiers[groupIndex].options,
+      { label: "", price: 0 },
+    ];
+    formData.modifiers = [...formData.modifiers];
+  }
+
+  function removeModifierOption(/** @type {number} */ groupIndex, /** @type {number} */ optionIndex) {
+    formData.modifiers[groupIndex].options = formData.modifiers[groupIndex].options.filter((_, i) => i !== optionIndex);
+    formData.modifiers = [...formData.modifiers];
+  }
 </script>
 
 <div class="page">
@@ -389,6 +422,71 @@
               </button>
             </div>
           {/if}
+        </div>
+
+        <!-- Modifier Editor -->
+        <div class="form-group">
+          <div class="modifier-header">
+            <label>Modifier / Opsi Tambahan</label>
+            <button type="button" class="modifier-add-btn" on:click={addModifierGroup}>
+              <Plus size={14} /> Tambah Grup
+            </button>
+          </div>
+
+          {#if formData.modifiers.length === 0}
+            <p class="modifier-empty">Belum ada modifier. Klik "Tambah Grup" untuk menambahkan opsi seperti Porsi, Level Pedas, dll.</p>
+          {/if}
+
+          {#each formData.modifiers as group, gi}
+            <div class="modifier-group">
+              <div class="modifier-group-header">
+                <div class="modifier-group-inputs">
+                  <input
+                    type="text"
+                    bind:value={group.name}
+                    placeholder="Nama grup (cth: Porsi, Level Pedas)"
+                    class="modifier-name-input"
+                  />
+                  <label class="modifier-required-toggle">
+                    <input type="checkbox" bind:checked={group.required} />
+                    <span>Wajib dipilih</span>
+                  </label>
+                </div>
+                <button type="button" class="modifier-remove-group" on:click={() => removeModifierGroup(gi)} title="Hapus grup">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+
+              <div class="modifier-options">
+                {#each group.options as option, oi}
+                  <div class="modifier-option-row">
+                    <input
+                      type="text"
+                      bind:value={option.label}
+                      placeholder="Label opsi"
+                      class="modifier-option-label"
+                    />
+                    <div class="modifier-price-wrapper">
+                      <span class="modifier-price-prefix">Rp</span>
+                      <input
+                        type="number"
+                        bind:value={option.price}
+                        placeholder="0"
+                        min="0"
+                        class="modifier-option-price"
+                      />
+                    </div>
+                    <button type="button" class="modifier-remove-option" on:click={() => removeModifierOption(gi, oi)} title="Hapus opsi">
+                      <X size={14} />
+                    </button>
+                  </div>
+                {/each}
+                <button type="button" class="modifier-add-option" on:click={() => addModifierOption(gi)}>
+                  <Plus size={12} /> Tambah Opsi
+                </button>
+              </div>
+            </div>
+          {/each}
         </div>
 
         {#if formError}
@@ -793,5 +891,193 @@
   
   .remove-img-btn:hover {
     text-decoration: underline;
+  }
+
+  /* Modifier Editor */
+  .modifier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .modifier-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--color-accent-subtle);
+    transition: all 0.2s;
+  }
+
+  .modifier-add-btn:hover {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  .modifier-empty {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    padding: 12px;
+    background: var(--color-bg-warm);
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .modifier-group {
+    background: var(--color-bg-warm);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+
+  .modifier-group-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .modifier-group-inputs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modifier-name-input {
+    padding: 8px 12px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .modifier-name-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .modifier-required-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+
+  .modifier-required-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .modifier-remove-group {
+    padding: 6px;
+    color: var(--color-danger);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .modifier-remove-group:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .modifier-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modifier-option-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .modifier-option-label {
+    flex: 1;
+    padding: 8px 10px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+  }
+
+  .modifier-option-label:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .modifier-price-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .modifier-price-prefix {
+    padding: 8px 6px 8px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-bg-warm);
+  }
+
+  .modifier-option-price {
+    flex: 1;
+    padding: 8px 8px;
+    background: transparent;
+    border: none;
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+    width: 100%;
+  }
+
+  .modifier-option-price:focus {
+    outline: none;
+  }
+
+  .modifier-remove-option {
+    padding: 6px;
+    color: var(--color-text-muted);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .modifier-remove-option:hover {
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .modifier-add-option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    padding: 6px 10px;
+    margin-top: 4px;
+    border-radius: 6px;
+    align-self: flex-start;
+  }
+
+  .modifier-add-option:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-accent);
   }
 </style>
