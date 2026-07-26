@@ -8,11 +8,10 @@
     ArrowUpRight,
     ArrowDownRight,
     Search,
-    Download,
     Filter,
-    ChevronDown,
   } from "lucide-svelte";
   import { formatRupiah } from "../utils.js";
+  import { apiFetch } from "../api.js";
 
   // Date filter state
   let dateFrom = "";
@@ -21,103 +20,34 @@
 
   // Data
   /** @type {any[]} */
+  let allOrders = [];
+  /** @type {any[]} */
   let salesData = [];
   /** @type {any} */
   let summary = { totalRevenue: 0, totalOrders: 0, avgOrder: 0, growth: 0 };
   let loading = true;
   let searchQuery = "";
 
-  // ── Dummy Data Generator ──────────────────────────
-  function generateDummyData() {
-    const products = [
-      { name: "Mie Ayam Spesial", price: 25000 },
-      { name: "Mie Ayam Bakso", price: 28000 },
-      { name: "Mie Ayam Pangsit", price: 27000 },
-      { name: "Mie Ayam Ceker", price: 30000 },
-      { name: "Mie Ayam Jumbo", price: 35000 },
-      { name: "Es Teh Manis", price: 5000 },
-      { name: "Es Jeruk", price: 7000 },
-      { name: "Teh Hangat", price: 4000 },
-      { name: "Kopi Susu", price: 12000 },
-      { name: "Air Mineral", price: 4000 },
-      { name: "Bakso Kuah", price: 22000 },
-      { name: "Pangsit Goreng", price: 15000 },
-    ];
-
-    const customers = [
-      "Ahmad Rafi", "Siti Nurhaliza", "Budi Santoso", "Dewi Lestari",
-      "Eko Prasetyo", "Fitri Handayani", "Gunawan Wibisono", "Hana Pertiwi",
-      "Irfan Hakim", "Joko Widodo", "Kartini Putri", "Lukman Hakim",
-      "Maya Sari", "Nanda Putra", "Oki Setiana", "Putu Wijaya",
-      "Rina Marlina", "Surya Darma", "Tika Amelia", "Udin Sedunia",
-    ];
-
-    const statuses = ["completed", "completed", "completed", "completed", "confirmed"];
-
-    /** @type {any[]} */
-    let data = [];
-    const now = new Date();
-
-    // Generate 60 days of orders
-    for (let dayOffset = 0; dayOffset < 60; dayOffset++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - dayOffset);
-
-      // Random number of orders per day (3-12)
-      const ordersCount = Math.floor(Math.random() * 10) + 3;
-
-      for (let i = 0; i < ordersCount; i++) {
-        // Random items per order (1-4)
-        const itemCount = Math.floor(Math.random() * 4) + 1;
-        /** @type {any[]} */
-        let items = [];
-        let orderTotal = 0;
-
-        for (let j = 0; j < itemCount; j++) {
-          const product = products[Math.floor(Math.random() * products.length)];
-          const qty = Math.floor(Math.random() * 3) + 1;
-          const itemTotal = product.price * qty;
-          orderTotal += itemTotal;
-          items.push({
-            product_title: product.name,
-            quantity: qty,
-            price_at_time: product.price,
-            total: itemTotal,
-          });
-        }
-
-        const hour = Math.floor(Math.random() * 12) + 8; // 08:00 - 20:00
-        const minute = Math.floor(Math.random() * 60);
-        const orderDate = new Date(date);
-        orderDate.setHours(hour, minute, 0, 0);
-
-        data.push({
-          id: data.length + 1001,
-          customer_name: customers[Math.floor(Math.random() * customers.length)],
-          customer_phone: `08${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-          items,
-          total: orderTotal,
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          payment_method: Math.random() > 0.3 ? "Pembayaran Langsung" : "Midtrans",
-          created_at: orderDate.toISOString(),
-        });
-      }
-    }
-
-    // Sort newest first
-    data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    return data;
-  }
-
-  /** @type {any[]} */
-  let allData = [];
-
-  onMount(() => {
-    allData = generateDummyData();
+  onMount(async () => {
+    await fetchAllOrders();
     setQuickFilter("today");
     loading = false;
   });
+
+  async function fetchAllOrders() {
+    try {
+      const res = await apiFetch("/api/orders");
+      if (res.ok) {
+        allOrders = await res.json();
+      } else {
+        console.error("Failed to fetch orders:", res.statusText);
+        allOrders = [];
+      }
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+      allOrders = [];
+    }
+  }
 
   // ── Filter logic ──────────────────────────────────
   /** @param {string} type */
@@ -159,17 +89,18 @@
     const to = new Date(dateTo);
     to.setHours(23, 59, 59, 999);
 
-    salesData = allData.filter((order) => {
+    // Only include confirmed & completed orders (real sales)
+    salesData = allOrders.filter((order) => {
       const d = new Date(order.created_at);
-      return d >= from && d <= to && order.status !== "pending";
+      return d >= from && d <= to && (order.status === "confirmed" || order.status === "completed");
     });
 
     // Calculate summary
-    const totalRevenue = salesData.reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = salesData.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     const totalOrders = salesData.length;
     const avgOrder = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
-    // Compare with previous period
+    // Compare with previous period of same length
     const daySpan = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)));
     const prevFrom = new Date(from);
     prevFrom.setDate(prevFrom.getDate() - daySpan);
@@ -177,11 +108,11 @@
     prevTo.setDate(prevTo.getDate() - 1);
     prevTo.setHours(23, 59, 59, 999);
 
-    const prevData = allData.filter((order) => {
+    const prevData = allOrders.filter((order) => {
       const d = new Date(order.created_at);
-      return d >= prevFrom && d <= prevTo && order.status !== "pending";
+      return d >= prevFrom && d <= prevTo && (order.status === "confirmed" || order.status === "completed");
     });
-    const prevRevenue = prevData.reduce((sum, o) => sum + o.total, 0);
+    const prevRevenue = prevData.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     const growth = prevRevenue > 0 ? Math.round(((totalRevenue - prevRevenue) / prevRevenue) * 100) : 0;
 
     summary = { totalRevenue, totalOrders, avgOrder, growth };
@@ -213,34 +144,32 @@
     });
   }
 
+  function getStatusLabel(/** @type {any} */ status) {
+    switch (status) {
+      case "pending": return "Menunggu Bayar";
+      case "confirmed": return "Dikonfirmasi";
+      case "completed": return "Selesai";
+      default: return status;
+    }
+  }
+
+  function getStatusColor(/** @type {any} */ status) {
+    switch (status) {
+      case "pending": return "#f59e0b";
+      case "confirmed": return "#3b82f6";
+      case "completed": return "#22c55e";
+      default: return "#888";
+    }
+  }
+
   // Search filtering
   $: filteredSales = searchQuery
     ? salesData.filter(
         (o) =>
-          o.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (o.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
           String(o.id).includes(searchQuery)
       )
     : salesData;
-
-  // Product breakdown
-  $: productBreakdown = (() => {
-    /** @type {Record<string, { name: string; qty: number; revenue: number }>} */
-    const map = {};
-    salesData.forEach((order) => {
-      order.items.forEach((/** @type {any} */ item) => {
-        if (!map[item.product_title]) {
-          map[item.product_title] = { name: item.product_title, qty: 0, revenue: 0 };
-        }
-        map[item.product_title].qty += item.quantity;
-        map[item.product_title].revenue += item.total;
-      });
-    });
-    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
-  })();
-
-  // Top 5 products for chart visual
-  $: topProducts = productBreakdown.slice(0, 5);
-  $: maxRevenue = topProducts.length > 0 ? topProducts[0].revenue : 1;
 
   // Daily breakdown for mini chart
   $: dailyBreakdown = (() => {
@@ -248,7 +177,7 @@
     const map = {};
     salesData.forEach((order) => {
       const dateKey = new Date(order.created_at).toISOString().split("T")[0];
-      map[dateKey] = (map[dateKey] || 0) + order.total;
+      map[dateKey] = (map[dateKey] || 0) + (parseFloat(order.total) || 0);
     });
     return Object.entries(map)
       .map(([date, total]) => ({ date, total }))
@@ -344,56 +273,24 @@
       </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="charts-row">
-      <!-- Daily Revenue Chart -->
-      {#if dailyBreakdown.length > 1}
-        <div class="chart-card">
-          <h3>📈 Pendapatan Harian</h3>
-          <div class="bar-chart">
-            {#each dailyBreakdown as day}
-              <div class="bar-col">
-                <div class="bar-tooltip">{formatRupiah(day.total)}</div>
-                <div
-                  class="bar"
-                  style="height: {Math.max(4, (day.total / maxDaily) * 100)}%"
-                ></div>
-                <span class="bar-label">{formatDateShort(day.date)}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
-
-      <!-- Top Products -->
+    <!-- Daily Revenue Chart -->
+    {#if dailyBreakdown.length > 1}
       <div class="chart-card">
-        <h3>🏆 Produk Terlaris</h3>
-        {#if topProducts.length > 0}
-          <div class="top-products">
-            {#each topProducts as product, i}
-              <div class="product-row">
-                <div class="product-rank" class:gold={i === 0} class:silver={i === 1} class:bronze={i === 2}>
-                  {i + 1}
-                </div>
-                <div class="product-info">
-                  <span class="product-name">{product.name}</span>
-                  <span class="product-qty">{product.qty} terjual</span>
-                </div>
-                <div class="product-bar-wrap">
-                  <div
-                    class="product-bar"
-                    style="width: {(product.revenue / maxRevenue) * 100}%"
-                  ></div>
-                </div>
-                <span class="product-revenue">{formatRupiah(product.revenue)}</span>
-              </div>
-            {/each}
-          </div>
-        {:else}
-          <p class="no-data">Tidak ada data</p>
-        {/if}
+        <h3>📈 Pendapatan Harian</h3>
+        <div class="bar-chart">
+          {#each dailyBreakdown as day}
+            <div class="bar-col">
+              <div class="bar-tooltip">{formatRupiah(day.total)}</div>
+              <div
+                class="bar"
+                style="height: {Math.max(4, (day.total / maxDaily) * 100)}%"
+              ></div>
+              <span class="bar-label">{formatDateShort(day.date)}</span>
+            </div>
+          {/each}
+        </div>
       </div>
-    </div>
+    {/if}
 
     <!-- Sales Table -->
     <div class="table-section">
@@ -418,8 +315,8 @@
               <tr>
                 <th>ID</th>
                 <th>Pelanggan</th>
-                <th>Item</th>
                 <th>Total</th>
+                <th>Status</th>
                 <th>Pembayaran</th>
                 <th>Waktu</th>
               </tr>
@@ -430,24 +327,22 @@
                   <td class="sale-id">#{sale.id}</td>
                   <td>
                     <div class="customer-cell">
-                      <span class="name">{sale.customer_name}</span>
-                      <span class="phone">{sale.customer_phone}</span>
+                      <span class="name">{sale.customer_name || "-"}</span>
+                      <span class="phone">{sale.customer_phone || ""}</span>
                     </div>
                   </td>
+                  <td class="sale-total">{formatRupiah(sale.total || 0)}</td>
                   <td>
-                    <div class="items-cell">
-                      {#each sale.items.slice(0, 2) as item}
-                        <span class="item-tag">{item.product_title} x{item.quantity}</span>
-                      {/each}
-                      {#if sale.items.length > 2}
-                        <span class="item-more">+{sale.items.length - 2} lainnya</span>
-                      {/if}
-                    </div>
+                    <span
+                      class="status-badge"
+                      style="background: {getStatusColor(sale.status)}20; color: {getStatusColor(sale.status)}"
+                    >
+                      {getStatusLabel(sale.status)}
+                    </span>
                   </td>
-                  <td class="sale-total">{formatRupiah(sale.total)}</td>
                   <td>
-                    <span class="payment-badge" class:direct={sale.payment_method === "Pembayaran Langsung"}>
-                      {sale.payment_method}
+                    <span class="payment-badge" class:direct={sale.payment_method === "direct"}>
+                      {sale.payment_method === "direct" ? "Langsung" : sale.payment_method || "-"}
                     </span>
                   </td>
                   <td class="sale-time">{formatDate(sale.created_at)}</td>
@@ -679,19 +574,13 @@
     color: #ef4444;
   }
 
-  /* ── Charts ─────────────────────────────────── */
-  .charts-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
+  /* ── Chart ──────────────────────────────────── */
   .chart-card {
     background: var(--color-bg-secondary);
     border-radius: 16px;
     padding: 20px;
     border: 1px solid var(--color-border);
+    margin-bottom: 24px;
   }
 
   .chart-card h3 {
@@ -763,87 +652,6 @@
     text-overflow: ellipsis;
     max-width: 100%;
     text-align: center;
-  }
-
-  /* Top Products */
-  .top-products {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .product-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .product-rank {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    background: var(--color-bg-warm);
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-  }
-
-  .product-rank.gold { background: #fef3c7; color: #d97706; }
-  .product-rank.silver { background: #e5e7eb; color: #6b7280; }
-  .product-rank.bronze { background: #fed7aa; color: #c2410c; }
-
-  .product-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 100px;
-    flex-shrink: 0;
-  }
-
-  .product-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 130px;
-  }
-
-  .product-qty {
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-  }
-
-  .product-bar-wrap {
-    flex: 1;
-    height: 8px;
-    background: var(--color-bg-warm);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .product-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), #f39c12);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-
-  .product-revenue {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--color-accent);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .no-data {
-    color: var(--color-text-muted);
-    text-align: center;
-    padding: 24px;
   }
 
   /* ── Table Section ──────────────────────────── */
@@ -947,29 +755,17 @@
     color: var(--color-text-muted);
   }
 
-  .items-cell {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .item-tag {
-    font-size: 0.75rem;
-    background: var(--color-bg-warm);
-    padding: 2px 8px;
-    border-radius: 6px;
-    color: var(--color-text-primary);
+  .sale-total {
+    font-weight: 700;
     white-space: nowrap;
   }
 
-  .item-more {
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
     font-size: 0.75rem;
-    color: var(--color-text-muted);
-    font-style: italic;
-  }
-
-  .sale-total {
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
   }
 
@@ -1010,12 +806,6 @@
   }
 
   /* ── Responsive ─────────────────────────────── */
-  @media (max-width: 900px) {
-    .charts-row {
-      grid-template-columns: 1fr;
-    }
-  }
-
   @media (max-width: 600px) {
     .filter-bar {
       flex-direction: column;
