@@ -122,6 +122,9 @@
     if (!customerName.trim()) {
       nameError = "Nama wajib diisi";
       valid = false;
+    } else if (!/^[A-Za-z\\s]+$/.test(customerName)) {
+      nameError = "Nama hanya boleh berisi huruf";
+      valid = false;
     }
 
     if (!customerPhone.trim()) {
@@ -380,6 +383,7 @@
                 type="text"
                 id="name"
                 bind:value={customerName}
+                on:input={() => customerName = customerName.replace(/[^A-Za-z\\s]/g, '')}
                 placeholder="Masukkan nama Anda"
                 class:error={nameError}
               />
