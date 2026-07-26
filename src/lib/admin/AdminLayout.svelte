@@ -3,7 +3,6 @@
     LayoutDashboard,
     Package,
     FolderOpen,
-    ShoppingBag,
     Users,
     Settings,
     LogOut,
@@ -16,7 +15,6 @@
   import AdminDashboard from "./AdminDashboard.svelte";
   import ProductManager from "./ProductManager.svelte";
   import CategoryManager from "./CategoryManager.svelte";
-  import OrdersManager from "./OrdersManager.svelte";
   import CashierManager from "./CashierManager.svelte";
   import AdminSettings from "./AdminSettings.svelte";
   import SalesReport from "./SalesReport.svelte";
@@ -31,7 +29,6 @@
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "products", label: "Produk", icon: Package },
     { id: "categories", label: "Kategori", icon: FolderOpen },
-    { id: "orders", label: "Riwayat Order", icon: ShoppingBag },
     { id: "sales", label: "Laporan Penjualan", icon: BarChart3 },
     { id: "cashiers", label: "Kasir", icon: Users },
     { id: "settings", label: "Pengaturan", icon: Settings },
@@ -100,8 +97,6 @@
       <ProductManager />
     {:else if currentPage === "categories"}
       <CategoryManager />
-    {:else if currentPage === "orders"}
-      <OrdersManager />
     {:else if currentPage === "sales"}
       <SalesReport />
     {:else if currentPage === "cashiers"}

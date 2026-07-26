@@ -9,7 +9,13 @@
     ArrowDownRight,
     Search,
     Filter,
+    Eye,
+    X,
+    User,
+    Phone,
+    Clock,
   } from "lucide-svelte";
+  import { fade, fly } from "svelte/transition";
   import { formatRupiah } from "../utils.js";
   import { apiFetch } from "../api.js";
 
@@ -17,6 +23,7 @@
   let dateFrom = "";
   let dateTo = "";
   let quickFilter = "today"; // today, week, month, custom
+  let statusFilter = "all"; // all, confirmed, completed
 
   // Data
   /** @type {any[]} */
@@ -27,6 +34,10 @@
   let summary = { totalRevenue: 0, totalOrders: 0, avgOrder: 0, growth: 0 };
   let loading = true;
   let searchQuery = "";
+
+  // Order detail modal
+  /** @type {any} */
+  let selectedOrder = null;
 
   onMount(async () => {
     await fetchAllOrders();
@@ -84,15 +95,20 @@
   function applyFilter() {
     if (!dateFrom || !dateTo) return;
 
-    const from = new Date(dateFrom);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(dateTo);
-    to.setHours(23, 59, 59, 999);
+    // Parse date strings as local dates (not UTC)
+    const fromParts = dateFrom.split("-");
+    const from = new Date(parseInt(fromParts[0]), parseInt(fromParts[1]) - 1, parseInt(fromParts[2]), 0, 0, 0, 0);
+    const toParts = dateTo.split("-");
+    const to = new Date(parseInt(toParts[0]), parseInt(toParts[1]) - 1, parseInt(toParts[2]), 23, 59, 59, 999);
 
-    // Only include confirmed & completed orders (real sales)
+    // Filter orders by date and status
     salesData = allOrders.filter((order) => {
       const d = new Date(order.created_at);
-      return d >= from && d <= to && (order.status === "confirmed" || order.status === "completed");
+      const inDateRange = d >= from && d <= to;
+      const matchesStatus = statusFilter === "all"
+        ? (order.status === "confirmed" || order.status === "completed")
+        : order.status === statusFilter;
+      return inDateRange && matchesStatus;
     });
 
     // Calculate summary
@@ -118,9 +134,15 @@
     summary = { totalRevenue, totalOrders, avgOrder, growth };
   }
 
-  /** @param {Date} d */
+  /**
+   * Format a Date to YYYY-MM-DD using local timezone
+   * @param {Date} d
+   */
   function formatDateInput(d) {
-    return d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   /** @param {any} dateStr */
@@ -137,7 +159,9 @@
 
   /** @param {any} dateStr */
   function formatDateShort(dateStr) {
-    const d = new Date(dateStr);
+    // Parse as local date for chart labels
+    const parts = dateStr.split("-");
+    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     return d.toLocaleDateString("id-ID", {
       day: "2-digit",
       month: "short",
@@ -162,6 +186,34 @@
     }
   }
 
+  function parseModifiers(/** @type {any} */ modifiersJson) {
+    if (!modifiersJson) return null;
+    try {
+      return JSON.parse(modifiersJson);
+    } catch {
+      return null;
+    }
+  }
+
+  // Order detail
+  async function viewOrder(/** @type {any} */ order) {
+    try {
+      const res = await apiFetch(`/api/orders/${order.id}`);
+      if (res.ok) {
+        selectedOrder = await res.json();
+      }
+    } catch (err) {
+      console.error("Failed to fetch order details:", err);
+    }
+  }
+
+  function closeModal() {
+    selectedOrder = null;
+  }
+
+  // Reactive: re-apply filter when status filter changes
+  $: if (statusFilter) applyFilter();
+
   // Search filtering
   $: filteredSales = searchQuery
     ? salesData.filter(
@@ -171,12 +223,13 @@
       )
     : salesData;
 
-  // Daily breakdown for mini chart
+  // Daily breakdown for mini chart (use local dates)
   $: dailyBreakdown = (() => {
     /** @type {Record<string, number>} */
     const map = {};
     salesData.forEach((order) => {
-      const dateKey = new Date(order.created_at).toISOString().split("T")[0];
+      const d = new Date(order.created_at);
+      const dateKey = formatDateInput(d);
       map[dateKey] = (map[dateKey] || 0) + (parseFloat(order.total) || 0);
     });
     return Object.entries(map)
@@ -197,20 +250,34 @@
 
   <!-- Quick Filters -->
   <div class="filter-bar">
-    <div class="quick-filters">
-      <button class:active={quickFilter === "today"} on:click={() => setQuickFilter("today")}>
-        Hari Ini
-      </button>
-      <button class:active={quickFilter === "week"} on:click={() => setQuickFilter("week")}>
-        7 Hari
-      </button>
-      <button class:active={quickFilter === "month"} on:click={() => setQuickFilter("month")}>
-        Bulan Ini
-      </button>
-      <button class:active={quickFilter === "custom"} on:click={() => setQuickFilter("custom")}>
-        <Filter size={14} />
-        Kustom
-      </button>
+    <div class="filter-row">
+      <div class="quick-filters">
+        <button class:active={quickFilter === "today"} on:click={() => setQuickFilter("today")}>
+          Hari Ini
+        </button>
+        <button class:active={quickFilter === "week"} on:click={() => setQuickFilter("week")}>
+          7 Hari
+        </button>
+        <button class:active={quickFilter === "month"} on:click={() => setQuickFilter("month")}>
+          Bulan Ini
+        </button>
+        <button class:active={quickFilter === "custom"} on:click={() => setQuickFilter("custom")}>
+          <Filter size={14} />
+          Kustom
+        </button>
+      </div>
+
+      <div class="status-filters">
+        <button class:active={statusFilter === "all"} on:click={() => (statusFilter = "all")}>
+          Semua
+        </button>
+        <button class:active={statusFilter === "confirmed"} on:click={() => (statusFilter = "confirmed")}>
+          Aktif
+        </button>
+        <button class:active={statusFilter === "completed"} on:click={() => (statusFilter = "completed")}>
+          Selesai
+        </button>
+      </div>
     </div>
 
     <div class="date-inputs">
@@ -313,12 +380,12 @@
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Order</th>
                 <th>Pelanggan</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Pembayaran</th>
                 <th>Waktu</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -340,12 +407,12 @@
                       {getStatusLabel(sale.status)}
                     </span>
                   </td>
-                  <td>
-                    <span class="payment-badge" class:direct={sale.payment_method === "direct"}>
-                      {sale.payment_method === "direct" ? "Langsung" : sale.payment_method || "-"}
-                    </span>
-                  </td>
                   <td class="sale-time">{formatDate(sale.created_at)}</td>
+                  <td>
+                    <button class="view-btn" on:click={() => viewOrder(sale)}>
+                      <Eye size={16} />
+                    </button>
+                  </td>
                 </tr>
               {/each}
             </tbody>
@@ -359,6 +426,93 @@
     </div>
   {/if}
 </div>
+
+<!-- Order Detail Modal -->
+{#if selectedOrder}
+  <div class="modal-backdrop" transition:fade={{ duration: 150 }}>
+    <div class="modal" transition:fly={{ y: 20, duration: 200 }}>
+      <div class="modal-header">
+        <h2>Order #{selectedOrder.id}</h2>
+        <button class="close-btn" on:click={closeModal}>
+          <X size={20} />
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="order-info">
+          <div class="info-row">
+            <User size={16} />
+            <span>{selectedOrder.customer_name}</span>
+          </div>
+          <div class="info-row">
+            <Phone size={16} />
+            <span>{selectedOrder.customer_phone}</span>
+          </div>
+          <div class="info-row">
+            <Clock size={16} />
+            <span>{formatDate(selectedOrder.created_at)}</span>
+          </div>
+        </div>
+
+        <div class="status-info">
+          <span class="label">Status:</span>
+          <span
+            class="status-badge large"
+            style="background: {getStatusColor(selectedOrder.status)}20; color: {getStatusColor(selectedOrder.status)}"
+          >
+            {getStatusLabel(selectedOrder.status)}
+          </span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="items-section">
+          <h3>Items</h3>
+          {#if selectedOrder.items && selectedOrder.items.length > 0}
+            {#each selectedOrder.items as item}
+              <div class="item-row">
+                <div class="item-info">
+                  <span class="item-name">
+                    {item.product_title}
+                    {#if item.quantity > 1}
+                      <span class="qty">x{item.quantity}</span>
+                    {/if}
+                  </span>
+                  {#if item.modifiers_json}
+                    {@const mods = parseModifiers(item.modifiers_json)}
+                    {#if mods}
+                      <div class="item-mods">
+                        {#each Object.entries(mods) as [key, val]}
+                          {#if Array.isArray(val)}
+                            {#each val as v}
+                              <span class="mod">+ {v.label}</span>
+                            {/each}
+                          {:else if val}
+                            <span class="mod">+ {val.label}</span>
+                          {/if}
+                        {/each}
+                      </div>
+                    {/if}
+                  {/if}
+                </div>
+                <span class="item-price">{formatRupiah(item.price_at_time || 0)}</span>
+              </div>
+            {/each}
+          {:else}
+            <p class="no-items">Tidak ada item</p>
+          {/if}
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="total-section">
+          <span>Total</span>
+          <span class="total-amount">{formatRupiah(selectedOrder.total || 0)}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   .page {
@@ -395,7 +549,14 @@
     border: 1px solid var(--color-border);
   }
 
-  .quick-filters {
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .quick-filters, .status-filters {
     display: flex;
     gap: 6px;
     background: var(--color-bg-primary);
@@ -403,7 +564,7 @@
     border-radius: 10px;
   }
 
-  .quick-filters button {
+  .quick-filters button, .status-filters button {
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -420,7 +581,13 @@
     color: #fff;
   }
 
-  .quick-filters button:hover:not(.active) {
+  .status-filters button.active {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  .quick-filters button:hover:not(.active),
+  .status-filters button:hover:not(.active) {
     background: var(--color-bg-warm);
   }
 
@@ -589,7 +756,6 @@
     margin-bottom: 16px;
   }
 
-  /* Bar Chart */
   .bar-chart {
     display: flex;
     align-items: flex-end;
@@ -762,33 +928,38 @@
 
   .status-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 4px 10px;
     border-radius: 6px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
   }
 
-  .payment-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: #3b82f615;
-    color: #3b82f6;
-    white-space: nowrap;
-  }
-
-  .payment-badge.direct {
-    background: #22c55e15;
-    color: #22c55e;
+  .status-badge.large {
+    padding: 6px 14px;
+    font-size: 0.9rem;
   }
 
   .sale-time {
     font-size: 0.8rem;
     color: var(--color-text-secondary);
     white-space: nowrap;
+  }
+
+  .view-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--color-bg-warm);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .view-btn:hover {
+    background: var(--color-border);
+    color: var(--color-text-primary);
   }
 
   .table-footer {
@@ -805,6 +976,150 @@
     color: var(--color-text-secondary);
   }
 
+  /* ── Modal ──────────────────────────────────── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(45, 32, 22, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+
+  .modal {
+    background: var(--color-bg-secondary);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  .close-btn {
+    padding: 8px;
+    color: var(--color-text-secondary);
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .order-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .status-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-info .label {
+    color: var(--color-text-secondary);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 20px 0;
+  }
+
+  .items-section h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-text-secondary);
+  }
+
+  .item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .item-info {
+    flex: 1;
+  }
+
+  .item-name {
+    font-size: 0.95rem;
+  }
+
+  .qty {
+    color: var(--color-text-secondary);
+    margin-left: 4px;
+  }
+
+  .item-mods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .mod {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-warm);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .item-price {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .no-items {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    padding: 16px 0;
+    text-align: center;
+  }
+
+  .total-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .total-amount {
+    font-size: 1.25rem;
+    color: var(--color-accent);
+  }
+
   /* ── Responsive ─────────────────────────────── */
   @media (max-width: 600px) {
     .filter-bar {
@@ -812,7 +1127,11 @@
       align-items: stretch;
     }
 
-    .quick-filters {
+    .filter-row {
+      flex-direction: column;
+    }
+
+    .quick-filters, .status-filters {
       justify-content: center;
     }
 
