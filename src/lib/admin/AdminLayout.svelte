@@ -9,6 +9,7 @@
     LogOut,
     Menu,
     X,
+    BarChart3,
   } from "lucide-svelte";
   import { navigate } from "../navigate.js";
 
@@ -18,6 +19,7 @@
   import OrdersManager from "./OrdersManager.svelte";
   import CashierManager from "./CashierManager.svelte";
   import AdminSettings from "./AdminSettings.svelte";
+  import SalesReport from "./SalesReport.svelte";
 
   /** @type {() => void} */
   export let onLogout = () => {};
@@ -30,6 +32,7 @@
     { id: "products", label: "Produk", icon: Package },
     { id: "categories", label: "Kategori", icon: FolderOpen },
     { id: "orders", label: "Riwayat Order", icon: ShoppingBag },
+    { id: "sales", label: "Laporan Penjualan", icon: BarChart3 },
     { id: "cashiers", label: "Kasir", icon: Users },
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
@@ -99,6 +102,8 @@
       <CategoryManager />
     {:else if currentPage === "orders"}
       <OrdersManager />
+    {:else if currentPage === "sales"}
+      <SalesReport />
     {:else if currentPage === "cashiers"}
       <CashierManager />
     {:else if currentPage === "settings"}
